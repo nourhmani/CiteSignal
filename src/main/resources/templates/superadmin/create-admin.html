@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un administrateur - CiteSignal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #6f42c1;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">CiteSignal - Super Administration</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">Retour au tableau de bord</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header text-white" style="background-color: #6f42c1;">
+                        <h3>Créer un compte Administrateur</h3>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                            <span th:text="${successMessage}"></span>
+                        </div>
+                        
+                        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                            <span th:text="${errorMessage}"></span>
+                        </div>
+                        
+                        <form th:action="@{/user/superadmin/create-admin}" th:object="${createAdminRequest}" method="post">
+                            <div class="mb-3">
+                                <label for="nom" class="form-label">Nom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
+                                <div th:if="${#fields.hasErrors('nom')}" class="text-danger">
+                                    <small th:errors="*{nom}"></small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="prenom" class="form-label">Prénom <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="prenom" th:field="*{prenom}" required>
+                                <div th:if="${#fields.hasErrors('prenom')}" class="text-danger">
+                                    <small th:errors="*{prenom}"></small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                                <div th:if="${#fields.hasErrors('email')}" class="text-danger">
+                                    <small th:errors="*{email}"></small>
+                                </div>
+                                <small class="form-text text-muted">Les identifiants de connexion seront envoyés à cette adresse email</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="telephone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="telephone" th:field="*{telephone}">
+                                <div th:if="${#fields.hasErrors('telephone')}" class="text-danger">
+                                    <small th:errors="*{telephone}"></small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="adresse" class="form-label">Adresse</label>
+                                <textarea class="form-control" id="adresse" th:field="*{adresse}" rows="3"></textarea>
+                                <div th:if="${#fields.hasErrors('adresse')}" class="text-danger">
+                                    <small th:errors="*{adresse}"></small>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <strong>Note :</strong> Un mot de passe sécurisé sera généré automatiquement et envoyé par email à l'administrateur.
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/dashboard" class="btn btn-secondary">Annuler</a>
+                                <button type="submit" class="btn text-white" style="background-color: #6f42c1;">Créer l'administrateur</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
