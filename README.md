@@ -157,15 +157,45 @@ Content-Type: application/json
 - ✅ Autorisations basées sur les rôles (@PreAuthorize)
 - ✅ URLs sécurisées par rôle
 
-## Prochaines étapes
+## Fonctionnalités implémentées (suite)
 
-- [ ] Implémentation de la déclaration d'incidents
-- [ ] Gestion du workflow des incidents
-- [ ] Notifications en temps réel (WebSockets)
-- [ ] Tableaux de bord avec statistiques
-- [ ] Recherche et filtrage avancés
-- [ ] Upload et gestion de photos
-- [ ] Géolocalisation avec Google Maps
+### Gestion des incidents
+
+- ✅ Déclaration d'incidents par les citoyens (formulaire avec catégorie, description, photos, géolocalisation)
+- ✅ Workflow complet des incidents : Signalé → Pris en charge → En résolution → Résolu → Clôturé
+- ✅ Upload et gestion de photos (validation, stockage sécurisé)
+- ✅ Géolocalisation avec Leaflet/OpenStreetMap (carte interactive)
+- ✅ Recherche et filtrage avancés (par statut, catégorie, quartier, date, texte)
+- ✅ Assignation d'agents et départements aux incidents
+- ✅ Gestion des priorités (Basse, Moyenne, Haute, Urgente)
+- ✅ Feedback et notation de satisfaction par les citoyens
+
+### Notifications
+
+- ✅ Notifications en base de données pour tous les utilisateurs
+- ✅ Notifications par email via Spring Mail
+- ✅ Support WebSocket pour notifications en temps réel (infrastructure prête)
+- ✅ Marquage des notifications comme lues/non lues
+
+### Tableaux de bord et statistiques
+
+- ✅ Dashboards personnalisés par rôle (Citoyen, Agent, Admin, SuperAdmin)
+- ✅ Statistiques générales (incidents par statut, catégorie, etc.)
+- ✅ Support Chart.js pour visualisation des données (prêt à l'utilisation)
+- ✅ Liste des incidents avec pagination et tri
+
+### Modèle de données
+
+- ✅ 7 entités principales : User, Incident, Photo, Quartier, Notification, Rapport, Departement
+- ✅ Relations JPA complètes avec validations
+- ✅ Initialisation automatique des quartiers et départements de base
+
+### Sécurité renforcée
+
+- ✅ Protection CSRF activée pour les formulaires
+- ✅ Validation des uploads (taille, type MIME)
+- ✅ Autorisations basées sur les rôles (@PreAuthorize)
+- ✅ URLs sécurisées par rôle
 
 ## Auteur
 

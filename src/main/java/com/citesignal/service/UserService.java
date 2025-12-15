@@ -146,6 +146,29 @@ public class UserService {
         return savedUser;
     }
     
+    @Transactional
+    public User createSuperAdmin(User user, String generatedPassword) {
+        // Vérifier si l'email existe déjà
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new RuntimeException("Un compte avec cet email existe déjà");
+        }
+        
+        // Encoder le mot de passe généré
+        user.setPassword(passwordEncoder.encode(generatedPassword));
+        
+        // Assigner le rôle SUPERADMIN
+        user.setRole(User.RoleName.SUPERADMIN);
+        
+        // Les super admins n'ont pas besoin de vérification d'email
+        user.setEmailVerified(true);
+        user.setActive(true);
+        
+        User savedUser = userRepository.save(user);
+        
+        logger.info("Nouveau super administrateur créé: {}", user.getEmail());
+        return savedUser;
+    }
+    
     public String generateRandomPassword() {
         SecureRandom random = new SecureRandom();
         StringBuilder password = new StringBuilder(12);
@@ -203,6 +226,12 @@ public class UserService {
     
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+    
+    public List<User> getUsersByRole(User.RoleName role) {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getRole() == role)
+                .collect(java.util.stream.Collectors.toList());
     }
     
     @Transactional

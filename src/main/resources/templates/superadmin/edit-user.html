@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${title}">Modifier l'Utilisateur - CiteSignal</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #6366f1;
+        --secondary-color: #8b5cf6;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --success-color: #10b981;
+        --info-color: #06b6d4;
+        --dark-color: #1e293b;
+        --light-bg: #f8fafc;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: var(--light-bg);
+        min-height: 100vh;
+      }
+
+      .navbar {
+        background: linear-gradient(135deg, var(--warning-color), #d97706);
+        padding: 15px 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .navbar-brand {
+        font-size: 24px;
+        font-weight: 700;
+        color: white !important;
+      }
+
+      .btn-back {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .btn-back:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+      }
+
+      .main-content {
+        padding: 30px;
+      }
+
+      .form-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        padding: 40px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .form-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      .form-section {
+        margin-bottom: 30px;
+        padding: 25px;
+        background: var(--light-bg);
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+      }
+
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .form-floating {
+        margin-bottom: 20px;
+      }
+
+      .form-control,
+      .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      }
+
+      .form-control.is-invalid {
+        border-color: var(--danger-color);
+      }
+
+      .invalid-feedback {
+        display: block;
+        color: var(--danger-color);
+        font-size: 12px;
+        margin-top: 5px;
+      }
+
+      .form-check {
+        margin-bottom: 20px;
+      }
+
+      .form-check-input:checked {
+        background-color: var(--warning-color);
+        border-color: var(--warning-color);
+      }
+
+      .role-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .role-citizen {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .role-agent {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .role-admin {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .role-superadmin {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .btn-submit {
+        background: linear-gradient(135deg, var(--warning-color), #d97706);
+        border: none;
+        color: white;
+        padding: 14px 32px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 16px;
+        width: 100%;
+        transition: all 0.3s ease;
+      }
+
+      .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        color: white;
+      }
+
+      .btn-cancel {
+        background: #6b7280;
+        border: none;
+        color: white;
+        padding: 14px 32px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 16px;
+        width: 100%;
+        margin-top: 15px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      .btn-cancel:hover {
+        background: #4b5563;
+        color: white;
+      }
+
+      .alert {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .required-field::after {
+        content: " *";
+        color: var(--danger-color);
+      }
+
+      .warning-box {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+
+      .warning-box .fas {
+        color: #d97706;
+      }
+
+      .danger-box {
+        background: #fef2f2;
+        border: 1px solid #ef4444;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+
+      .danger-box .fas {
+        color: #dc2626;
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          padding: 20px 15px;
+        }
+
+        .form-container {
+          padding: 25px 20px;
+        }
+
+        .form-section {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="container-fluid">
+        <span class="navbar-brand">
+          <i class="fas fa-city me-2"></i>CiteSignal
+        </span>
+        <a href="/user/superadmin/users" class="btn-back">
+          <i class="fas fa-arrow-left"></i> Retour
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid main-content">
+      <div class="form-container">
+        <h1 class="form-title" th:text="${title}">Modifier l'Utilisateur</h1>
+
+        <!-- Warning Boxes -->
+        <div class="warning-box" th:if="${user.role.name() == 'SUPERADMIN'}">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Attention :</strong> Vous êtes sur le point de modifier un
+          compte Super Administrateur. Soyez extrêmement prudent avec les
+          modifications de rôle.
+        </div>
+
+        <div class="danger-box" th:if="${user.role.name() == 'SUPERADMIN'}">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Danger :</strong> Modifier le rôle d'un Super Administrateur
+          peut compromettre la sécurité du système. Assurez-vous de bien
+          comprendre les conséquences avant de procéder.
+        </div>
+
+        <!-- Alert Messages -->
+        <div
+          th:if="${successMessage}"
+          class="alert alert-success alert-dismissible fade show"
+          role="alert"
+        >
+          <i class="fas fa-check-circle me-2"></i>
+          <span th:text="${successMessage}"></span>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+          ></button>
+        </div>
+
+        <div
+          th:if="${errorMessage}"
+          class="alert alert-danger alert-dismissible fade show"
+          role="alert"
+        >
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <span th:text="${errorMessage}"></span>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+          ></button>
+        </div>
+
+        <!-- Edit Form -->
+        <form
+          th:action="@{/user/superadmin/edit-user/{id}(id=${user.id})}"
+          method="post"
+        >
+          <!-- Informations Personnelles -->
+          <div class="form-section">
+            <h3 class="section-title">
+              <i class="fas fa-user"></i>
+              Informations Personnelles
+            </h3>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nom"
+                    name="nom"
+                    th:value="${user.nom}"
+                    placeholder="Nom"
+                    required
+                  />
+                  <label for="nom" class="required-field">Nom</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="prenom"
+                    name="prenom"
+                    th:value="${user.prenom}"
+                    placeholder="Prénom"
+                    required
+                  />
+                  <label for="prenom" class="required-field">Prénom</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="email"
+                    name="email"
+                    th:value="${user.email}"
+                    placeholder="Email"
+                    required
+                  />
+                  <label for="email" class="required-field">Email</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="tel"
+                    class="form-control"
+                    id="telephone"
+                    name="telephone"
+                    th:value="${user.telephone}"
+                    placeholder="Téléphone"
+                  />
+                  <label for="telephone">Téléphone</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-floating">
+              <textarea
+                class="form-control"
+                id="adresse"
+                name="adresse"
+                placeholder="Adresse"
+                style="height: 100px"
+                th:text="${user.adresse}"
+              ></textarea>
+              <label for="adresse">Adresse</label>
+            </div>
+          </div>
+
+          <!-- Rôle et Permissions -->
+          <div class="form-section">
+            <h3 class="section-title">
+              <i class="fas fa-shield-alt"></i>
+              Rôle et Permissions
+            </h3>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <select class="form-select" id="role" name="role" required>
+                    <option
+                      th:each="roleOption : ${roles}"
+                      th:value="${roleOption.name()}"
+                      th:selected="${roleOption.name() == user.role.name()}"
+                      th:text="${roleOption.name() == 'CITOYEN' ? 'Citoyen' :
+                                                   roleOption.name() == 'AGENT_MUNICIPAL' ? 'Agent Municipal' :
+                                                   roleOption.name() == 'ADMINISTRATEUR' ? 'Administrateur' : 'Super Administrateur'}"
+                    ></option>
+                  </select>
+                  <label for="role" class="required-field">Rôle</label>
+                </div>
+              </div>
+              <div
+                class="col-md-6"
+                id="departementSection"
+                th:style="${user.role.name() == 'AGENT_MUNICIPAL' ? '' : 'display: none;'}"
+              >
+                <div class="form-floating">
+                  <select
+                    class="form-select"
+                    id="departementId"
+                    name="departementId"
+                  >
+                    <option value="">Sélectionner un département</option>
+                    <option
+                      th:each="dept : ${departements}"
+                      th:value="${dept.id}"
+                      th:selected="${user.departement != null and dept.id == user.departement.id}"
+                      th:text="${dept.nom}"
+                    ></option>
+                  </select>
+                  <label for="departementId">Département d'affectation</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Rôle actuel :</label>
+              <span
+                th:class="'role-badge ' + ${user.role.name().toLowerCase()}"
+                th:text="${user.role.name() == 'CITOYEN' ? 'Citoyen' :
+                                     user.role.name() == 'AGENT_MUNICIPAL' ? 'Agent Municipal' :
+                                     user.role.name() == 'ADMINISTRATEUR' ? 'Administrateur' : 'Super Administrateur'}"
+              ></span>
+            </div>
+          </div>
+
+          <!-- Statut du Compte -->
+          <div class="form-section">
+            <h3 class="section-title">
+              <i class="fas fa-toggle-on"></i>
+              Statut du Compte
+            </h3>
+
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="active"
+                name="active"
+                th:checked="${user.active}"
+              />
+              <label class="form-check-label" for="active">
+                <strong>Compte actif</strong>
+              </label>
+              <div class="form-text">
+                Désactivez cette option pour suspendre temporairement l'accès de
+                l'utilisateur à la plateforme.
+              </div>
+            </div>
+          </div>
+
+          <!-- Informations Système -->
+          <div class="form-section">
+            <h3 class="section-title">
+              <i class="fas fa-info-circle"></i>
+              Informations Système
+            </h3>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="createdAt"
+                    th:value="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}"
+                    readonly
+                  />
+                  <label for="createdAt">Date d'inscription</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="emailVerified"
+                    th:value="${user.emailVerified ? 'Oui' : 'Non'}"
+                    readonly
+                  />
+                  <label for="emailVerified">Email vérifié</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="lastLogin"
+                    th:value="${user.lastLogin != null ? #temporals.format(user.lastLogin, 'dd/MM/yyyy HH:mm') : 'Jamais'}"
+                    readonly
+                  />
+                  <label for="lastLogin">Dernière connexion</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="updatedAt"
+                    th:value="${user.updatedAt != null ? #temporals.format(user.updatedAt, 'dd/MM/yyyy HH:mm') : 'Jamais'}"
+                    readonly
+                  />
+                  <label for="updatedAt">Dernière modification</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-grid gap-3">
+            <button type="submit" class="btn-submit">
+              <i class="fas fa-save me-2"></i>
+              Enregistrer les modifications
+            </button>
+            <a th:href="@{/user/superadmin/users}" class="btn-cancel">
+              <i class="fas fa-times me-2"></i>
+              Annuler
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Show/hide department field based on role selection
+      document.getElementById("role").addEventListener("change", function () {
+        const departementSection =
+          document.getElementById("departementSection");
+        if (this.value === "AGENT_MUNICIPAL") {
+          departementSection.style.display = "";
+        } else {
+          departementSection.style.display = "none";
+          document.getElementById("departementId").value = "";
+        }
+      });
+    </script>
+  </body>
+</html>

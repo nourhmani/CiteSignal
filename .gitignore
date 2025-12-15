@@ -34,3 +34,8 @@ application*.properties
 application*.yml
 ### VS Code ###
 .vscode/
+.idea/
+*.code-workspace
+hs_err_pid29856.log
+replay_pid29856.log
+/.github/

@@ -1,6 +1,6 @@
-nom,prenom,email,telephone,adresse
-Dupont,Jean,jean.dupont@ville.fr,0123456789,123 Rue de la Mairie
-Martin,Marie,marie.martin@ville.fr,0987654321,456 Avenue des Fleurs
-Bernard,Pierre,pierre.bernard@ville.fr,0147258369,789 Boulevard de la République
-Dubois,Sophie,sophie.dubois@ville.fr,0198765432,321 Rue du Commerce
+nom,prenom,email,telephone,adresse,departement
+Dupont,Jean,jean.dupont@ville.fr,0123456789,123 Rue de la Mairie,Voirie et Infrastructure
+Martin,Marie,marie.martin@ville.fr,0987654321,456 Avenue des Fleurs,Propreté Urbaine
+Bernard,Pierre,pierre.bernard@ville.fr,0147258369,789 Boulevard de la République,Espaces Verts
+Dubois,Sophie,sophie.dubois@ville.fr,0198765432,321 Rue du Commerce,Éclairage Public
 

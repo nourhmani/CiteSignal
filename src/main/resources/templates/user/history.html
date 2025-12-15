@@ -1,31 +1,198 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes signalements - CiteSignal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .stat-badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .incident-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid;
+        }
+        .incident-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .incident-card.SIGNALE {
+            border-left-color: #6c757d;
+        }
+        .incident-card.PRIS_EN_CHARGE {
+            border-left-color: #0d6efd;
+        }
+        .incident-card.EN_RESOLUTION {
+            border-left-color: #ffc107;
+        }
+        .incident-card.RESOLU {
+            border-left-color: #198754;
+        }
+        .incident-card.CLOTURE {
+            border-left-color: #212529;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/dashboard">CiteSignal</a>
+            <a class="navbar-brand" th:href="@{/dashboard}">
+                <i class="fas fa-city"></i> CiteSignal
+            </a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/dashboard">Retour</a>
+                <a class="nav-link" th:href="@{/dashboard}">
+                    <i class="fas fa-arrow-left"></i> Retour au dashboard
+                </a>
             </div>
         </div>
     </nav>
     
     <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-12">
-                <h2>Historique de mes signalements</h2>
-                <p class="text-muted">Cette fonctionnalité sera disponible prochainement</p>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2><i class="fas fa-history"></i> Mes signalements</h2>
+                <p class="text-muted">Historique de tous vos signalements d'incidents</p>
             </div>
+            <a th:href="@{/incidents/create}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouveau signalement
+            </a>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Statistiques rapides -->
+        <div th:if="${totalIncidents != null && totalIncidents > 0}" class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary" th:text="${totalIncidents}">0</h5>
+                        <p class="card-text text-muted">Total signalements</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning" th:text="${enAttente}">0</h5>
+                        <p class="card-text text-muted">En attente</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-info" th:text="${enCours}">0</h5>
+                        <p class="card-text text-muted">En cours</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success" th:text="${resolus}">0</h5>
+                        <p class="card-text text-muted">Résolus</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Liste des incidents -->
+        <div th:if="${incidents != null && !incidents.empty}">
+            <div class="row">
+                <div th:each="incident : ${incidents.content}" class="col-md-6 mb-3">
+                    <div class="card incident-card" th:classappend="${incident.statut.name()}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">
+                                    <a th:href="@{/incidents/{id}(id=${incident.id})}" 
+                                       th:text="${incident.titre}"
+                                       style="text-decoration: none; color: inherit;">
+                                        Titre
+                                    </a>
+                                </h5>
+                                <span class="badge" 
+                                      th:classappend="${incident.statut.name() == 'SIGNALE'} ? 'bg-secondary' : 
+                                                      (${incident.statut.name() == 'PRIS_EN_CHARGE'} ? 'bg-primary' :
+                                                      (${incident.statut.name() == 'EN_RESOLUTION'} ? 'bg-warning' :
+                                                      (${incident.statut.name() == 'RESOLU'} ? 'bg-success' : 'bg-dark')))"
+                                      th:text="${incident.statut}"></span>
+                            </div>
+                            
+                            <p class="card-text text-muted mb-2" th:text="${incident.description}"></p>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span th:text="${incident.adresse}">Adresse</span>
+                                    <span th:if="${incident.quartier != null}">
+                                        - <span th:text="${incident.quartier.nom}">Quartier</span>
+                                    </span>
+                                </small>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-info me-2" th:text="${incident.categorie}"></span>
+                                    <span class="badge" 
+                                          th:classappend="${incident.priorite.name() == 'URGENTE'} ? 'bg-danger' : 
+                                                          (${incident.priorite.name() == 'HAUTE'} ? 'bg-warning' :
+                                                          (${incident.priorite.name() == 'MOYENNE'} ? 'bg-info' : 'bg-secondary'))"
+                                          th:text="${incident.priorite}"></span>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i>
+                                    <span th:text="${#temporals.format(incident.createdAt, 'dd/MM/yyyy')}">Date</span>
+                                </small>
+                            </div>
+                            
+                            <div th:if="${incident.agent != null}" class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-user-tie"></i> Agent assigné: 
+                                    <span th:text="${incident.agent.prenom + ' ' + incident.agent.nom}"></span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <nav th:if="${incidents.totalPages > 1}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/user/history(page=${currentPage - 1})}">Précédent</a>
+                    </li>
+                    <li th:each="i : ${#numbers.sequence(0, incidents.totalPages - 1)}" 
+                        class="page-item" th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" th:href="@{/user/history(page=${i})}" th:text="${i + 1}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == incidents.totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/user/history(page=${currentPage + 1})}">Suivant</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        
+        <!-- Message si aucun incident -->
+        <div th:if="${incidents == null || incidents.empty}" class="text-center py-5">
+            <i class="fas fa-inbox" style="font-size: 64px; color: #cbd5e1; margin-bottom: 20px;"></i>
+            <h4 class="text-muted">Aucun signalement</h4>
+            <p class="text-muted">Vous n'avez pas encore signalé d'incident.</p>
+            <a th:href="@{/incidents/create}" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Créer mon premier signalement
+            </a>
         </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

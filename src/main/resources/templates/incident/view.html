@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${incident.titre} + ' - CiteSignal'">Détails de l'incident</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 5px;
+        }
+        .photo-gallery img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-info-circle"></i> Détails de l'incident</h2>
+            <div>
+                <a th:href="@{/incidents}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
+                <a sec:authorize="hasAnyRole('AGENT_MUNICIPAL', 'ADMINISTRATEUR', 'SUPERADMIN')"
+                   th:if="${canEdit}"
+                   th:href="@{/incidents/{id}/edit(id=${incident.id})}" 
+                   class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+            </div>
+        </div>
+        
+        <div th:if="${incident != null}" class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 th:text="${incident.titre}"></h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text" th:text="${incident.description}"></p>
+                        
+                        <div class="mb-3">
+                            <strong>Catégorie:</strong>
+                            <span class="badge bg-info ms-2" th:text="${incident.categorie}"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Statut:</strong>
+                            <span th:if="${incident.statut != null}" class="badge ms-2" 
+                                  th:classappend="${incident.statut.toString() == 'SIGNALE'} ? 'bg-secondary' : 
+                                                  (${incident.statut.toString() == 'PRIS_EN_CHARGE'} ? 'bg-primary' :
+                                                  (${incident.statut.toString() == 'EN_RESOLUTION'} ? 'bg-warning' :
+                                                  (${incident.statut.toString() == 'RESOLU'} ? 'bg-success' : 'bg-dark')))"
+                                  th:text="${incident.statut}"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Priorité:</strong>
+                            <span th:if="${incident.priorite != null}" class="badge ms-2" 
+                                  th:classappend="${incident.priorite.toString() == 'URGENTE'} ? 'bg-danger' : 
+                                                  (${incident.priorite.toString() == 'HAUTE'} ? 'bg-warning' :
+                                                  (${incident.priorite.toString() == 'MOYENNE'} ? 'bg-info' : 'bg-secondary'))"
+                                  th:text="${incident.priorite}"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Adresse:</strong>
+                            <p th:text="${incident.adresse}"></p>
+                        </div>
+                        
+                        <div th:if="${incident.quartier != null}" class="mb-3">
+                            <strong>Quartier:</strong>
+                            <span th:text="${incident.quartier.nom}"></span>
+                        </div>
+                        
+                        <div th:if="${incident.agent != null}" class="mb-3">
+                            <strong>Agent assigné:</strong>
+                            <span th:text="${incident.agent.prenom + ' ' + incident.agent.nom}"></span>
+                        </div>
+                        
+                        <div th:if="${incident.commentaireResolution != null}" class="mb-3">
+                            <strong>Commentaire de résolution:</strong>
+                            <p th:text="${incident.commentaireResolution}"></p>
+                        </div>
+                        
+                        <div th:if="${incident.feedbackCitoyen != null}" class="mb-3">
+                            <strong>Feedback du citoyen:</strong>
+                            <p th:text="${incident.feedbackCitoyen}"></p>
+                        </div>
+                        
+                        <div th:if="${incident.noteSatisfaction != null}" class="mb-3">
+                            <strong>Note de satisfaction:</strong>
+                            <div>
+                                <span th:each="i : ${#numbers.sequence(1, 5)}" 
+                                      th:classappend="${i <= incident.noteSatisfaction} ? 'fas fa-star text-warning' : 'far fa-star'"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Photos -->
+                <div th:if="${incident.photos != null && !incident.photos.isEmpty()}" class="card mb-4">
+                    <div class="card-header">
+                        <h5>Photos</h5>
+                    </div>
+                    <div class="card-body photo-gallery">
+                        <div class="row">
+                            <div th:each="photo : ${incident.photos}" class="col-md-4 mb-3">
+                                <img th:src="@{${photo.chemin}}" 
+                                     th:alt="${photo.nomFichier}" 
+                                     class="img-thumbnail"
+                                     style="cursor: pointer;"
+                                     onclick="window.open(this.src, '_blank')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Carte -->
+                <div th:if="${incident.latitude != null && incident.longitude != null}" class="card mb-4">
+                    <div class="card-header">
+                        <h5>Localisation</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="map"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Informations</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Créé le:</strong><br>
+                           <span th:text="${#temporals.format(incident.createdAt, 'dd/MM/yyyy à HH:mm')}"></span>
+                        </p>
+                        <p><strong>Citoyen:</strong><br>
+                           <span th:if="${incident.citoyen != null}" 
+                                 th:text="${incident.citoyen.prenom + ' ' + incident.citoyen.nom}"></span>
+                           <span th:if="${incident.citoyen == null}">Non disponible</span>
+                        </p>
+                        <p th:if="${incident.dateResolution != null}">
+                            <strong>Résolu le:</strong><br>
+                            <span th:text="${#temporals.format(incident.dateResolution, 'dd/MM/yyyy à HH:mm')}"></span>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Formulaire de clôture pour les citoyens -->
+                <div sec:authorize="hasRole('CITOYEN')" 
+                     th:if="${incident.statut != null && incident.statut.toString() == 'RESOLU'}" 
+                     class="card mt-4">
+                    <div class="card-header">
+                        <h5>Clôturer l'incident</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/incidents/{id}/close(id=${incident.id})}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Feedback</label>
+                                <textarea name="feedbackCitoyen" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Note de satisfaction (1-5)</label>
+                                <input type="number" name="noteSatisfaction" class="form-control" min="1" max="5">
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Clôturer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script th:if="${incident.latitude != null && incident.longitude != null}">
+        var lat = /*[[${incident.latitude}]]*/ 0;
+        var lng = /*[[${incident.longitude}]]*/ 0;
+        if (lat != 0 && lng != 0) {
+            var map = L.map('map').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            L.marker([lat, lng]).addTo(map);
+        }
+    </script>
+</body>
+</html>
+

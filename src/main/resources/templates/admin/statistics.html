@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques - CiteSignal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-chart-bar"></i> Statistiques</h2>
+            <a th:href="@{/dashboard}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour au dashboard
+            </a>
+        </div>
+        
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        
+        <div th:if="${statistics != null}">
+            <!-- Cards de statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Total incidents</h5>
+                            <h2 th:text="${statistics.totalIncidents}">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Incidents récents (30j)</h5>
+                            <h2 th:text="${statistics.recentIncidents}">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Résolus (30j)</h5>
+                            <h2 th:text="${statistics.resolvedLast30Days}">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Taux de résolution</h5>
+                            <h2 th:text="${statistics.resolutionRate} + '%'">0%</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Graphiques -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Incidents par statut</h5>
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Incidents par catégorie</h5>
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:if="${statistics != null}">
+        // Graphique des statuts
+        const statusData = /*[[${statistics.incidentsByStatus}]]*/ {};
+        const statusCtx = document.getElementById('statusChart');
+        if (statusCtx) {
+            new Chart(statusCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(statusData),
+                    datasets: [{
+                        label: 'Nombre d\'incidents',
+                        data: Object.values(statusData),
+                        backgroundColor: 'rgba(99, 102, 241, 0.5)'
+                    }]
+                }
+            });
+        }
+        
+        // Graphique des catégories
+        const categoryData = /*[[${statistics.incidentsByCategory}]]*/ {};
+        const categoryCtx = document.getElementById('categoryChart');
+        if (categoryCtx) {
+            new Chart(categoryCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(categoryData),
+                    datasets: [{
+                        data: Object.values(categoryData),
+                        backgroundColor: [
+                            'rgba(99, 102, 241, 0.5)',
+                            'rgba(16, 185, 129, 0.5)',
+                            'rgba(245, 158, 11, 0.5)',
+                            'rgba(239, 68, 68, 0.5)',
+                            'rgba(59, 130, 246, 0.5)'
+                        ]
+                    }]
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

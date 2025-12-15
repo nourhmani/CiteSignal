@@ -52,17 +52,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .ignoringRequestMatchers("/api/**", "/logout")) // Désactiver CSRF pour les API REST et logout
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint))
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/auth/**", "/register", "/login", "/verify-email", "/verify-email/**", 
-                               "/css/**", "/js/**", "/images/**", "/webjars/**", "/exemple-agents.csv").permitAll()
-                .requestMatchers("/admin/**").hasAnyRole("ADMINISTRATEUR", "SUPERADMIN")
-                .requestMatchers("/agent/**").hasAnyRole("AGENT_MUNICIPAL", "ADMINISTRATEUR", "SUPERADMIN")
-                .requestMatchers("/user/superadmin/**").hasRole("SUPERADMIN")
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/register", "/login", "/verify-email").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/uploads/**", "/exemple-agents.csv").permitAll()
+                .requestMatchers("/user/admin/create-agent", "/user/admin/import-agents", "/user/admin/users", "/user/admin/statistics").hasAnyAuthority("ROLE_ADMINISTRATEUR", "ROLE_SUPERADMIN")
+                .requestMatchers("/user/admin/**").hasAnyAuthority("ROLE_ADMINISTRATEUR", "ROLE_SUPERADMIN")
+                .requestMatchers("/user/superadmin/**").hasAuthority("ROLE_SUPERADMIN")
+                .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMINISTRATEUR", "ROLE_SUPERADMIN")
+                .requestMatchers("/agent/**").hasAnyAuthority("ROLE_AGENT_MUNICIPAL", "ROLE_ADMINISTRATEUR", "ROLE_SUPERADMIN")
+                .requestMatchers("/incidents/create").hasAuthority("ROLE_CITOYEN")
+                .requestMatchers("/incidents/*/edit").hasAnyAuthority("ROLE_AGENT_MUNICIPAL", "ROLE_ADMINISTRATEUR", "ROLE_SUPERADMIN")
+                .requestMatchers("/incidents/*/close").hasAuthority("ROLE_CITOYEN")
+                .requestMatchers("/incidents/**").authenticated()
+                .requestMatchers("/notifications/**").authenticated()
+                .requestMatchers("/user/profile", "/user/history").authenticated()
+                .requestMatchers("/", "/dashboard").authenticated()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
@@ -78,7 +91,8 @@ public class SecurityConfig {
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/auth/login?logout=true")
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID", "XSRF-TOKEN")
                 .permitAll()
             );
         
