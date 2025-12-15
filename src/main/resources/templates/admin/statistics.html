@@ -2,124 +2,1305 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistiques - CiteSignal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistiques - CiteSignal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-color: #6366f1;
+      --secondary-color: #8b5cf6;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --info-color: #3b82f6;
+      --dark-color: #1e293b;
+      --light-bg: #f8fafc;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--light-bg);
+      min-height: 100vh;
+    }
+
+    /* Top Navigation */
+    .top-navbar {
+      background: white;
+      padding: 20px 0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    .navbar-brand {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
+
+    .btn-back {
+      padding: 10px 20px;
+      background: var(--light-bg);
+      color: var(--dark-color);
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .btn-back:hover {
+      background: #e2e8f0;
+      color: var(--dark-color);
+      text-decoration: none;
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Page Header */
+    .page-header {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    .breadcrumb {
+      background: none;
+      padding: 0;
+      margin-bottom: 15px;
+    }
+
+    .breadcrumb-item {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .breadcrumb-item.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .breadcrumb-item a {
+      color: #64748b;
+      text-decoration: none;
+    }
+
+    .breadcrumb-item a:hover {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--dark-color);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    .page-title i {
+      margin-right: 12px;
+      color: var(--primary-color);
+    }
+
+    .page-subtitle {
+      color: #64748b;
+      font-size: 15px;
+    }
+
+    /* Stats Overview */
+    .stats-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .stat-card.total::before {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    }
+
+    .stat-card.recent::before {
+      background: linear-gradient(135deg, var(--warning-color), #d97706);
+    }
+
+    .stat-card.resolved::before {
+      background: linear-gradient(135deg, var(--success-color), #059669);
+    }
+
+    .stat-card.rate::before {
+      background: linear-gradient(135deg, var(--info-color), #1d4ed8);
+    }
+
+    .stat-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+    }
+
+    .stat-card.total .stat-icon {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+    }
+
+    .stat-card.recent .stat-icon {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.15));
+    }
+
+    .stat-card.resolved .stat-icon {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15));
+    }
+
+    .stat-card.rate .stat-icon {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(29, 78, 216, 0.15));
+    }
+
+    .stat-icon i {
+      font-size: 22px;
+    }
+
+    .stat-card.total .stat-icon i { color: var(--primary-color); }
+    .stat-card.recent .stat-icon i { color: var(--warning-color); }
+    .stat-card.resolved .stat-icon i { color: var(--success-color); }
+    .stat-card.rate .stat-icon i { color: var(--info-color); }
+
+    .stat-title {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--dark-color);
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .stat-subtitle {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    /* Charts Section */
+    .charts-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 1100px) {
+      .charts-section {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .chart-header {
+      padding: 25px 30px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .chart-header h3 {
+      margin: 0;
+      font-weight: 700;
+      color: var(--dark-color);
+      display: flex;
+      align-items: center;
+    }
+
+    .chart-header i {
+      margin-right: 10px;
+      color: var(--primary-color);
+    }
+
+    .chart-body {
+      padding: 25px 30px;
+      height: 300px;
+    }
+
+    /* Empty chart state */
+    .empty-chart {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #64748b;
+    }
+
+    .empty-chart i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-chart p {
+      font-size: 16px;
+      opacity: 0.7;
+    }
+
+    /* Time Filters */
+    .time-filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+
+    .time-filter {
+      padding: 10px 20px;
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark-color);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .time-filter:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      transform: translateY(-2px);
+    }
+
+    .time-filter.active {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      border-color: var(--primary-color);
+      color: white;
+    }
+
+    /* Detailed Stats */
+    .detailed-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .detail-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 25px;
+    }
+
+    .detail-card h4 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--dark-color);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .detail-card h4 i {
+      margin-right: 10px;
+      color: var(--primary-color);
+    }
+
+    .stats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .stat-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .stat-count {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--dark-color);
+    }
+
+    /* Priority Stats */
+    .priority-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .priority-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .priority-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .priority-urgente .priority-dot { background: var(--danger-color); }
+    .priority-haute .priority-dot { background: var(--warning-color); }
+    .priority-moyenne .priority-dot { background: var(--info-color); }
+    .priority-basse .priority-dot { background: #94a3b8; }
+
+    .priority-name {
+      font-size: 14px;
+      color: var(--dark-color);
+      font-weight: 500;
+    }
+
+    /* Alert */
+    .alert {
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: none;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .alert i {
+      font-size: 20px;
+    }
+
+    .alert-danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .alert-success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-state-icon {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 25px;
+    }
+
+    .empty-state-icon i {
+      font-size: 48px;
+      color: var(--primary-color);
+    }
+
+    .empty-state-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--dark-color);
+      margin-bottom: 10px;
+    }
+
+    .empty-state-text {
+      color: #64748b;
+      font-size: 16px;
+      margin-bottom: 30px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Report Section */
+    .report-section {
+      margin-top: 40px;
+      margin-bottom: 30px;
+    }
+
+    .report-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .report-form {
+      padding: 30px;
+    }
+
+    .report-form-content {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark-color);
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .format-options {
+      display: flex;
+      gap: 20px;
+      margin-top: 8px;
+    }
+
+    .format-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .format-option:hover {
+      border-color: var(--primary-color);
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    .format-option input[type="radio"] {
+      display: none;
+    }
+
+    .format-option input[type="radio"]:checked + i + span {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .format-option input[type="radio"]:checked ~ * {
+      color: var(--primary-color);
+    }
+
+    .format-option i {
+      font-size: 20px;
+      color: #64748b;
+      transition: color 0.3s ease;
+    }
+
+    .format-option span {
+      font-size: 14px;
+      font-weight: 500;
+      color: #64748b;
+      transition: color 0.3s ease;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .btn-generate {
+      padding: 14px 32px;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-generate i {
+      font-size: 18px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 0 15px;
+      }
+
+      .page-header {
+        padding: 20px;
+      }
+
+      .stats-overview {
+        grid-template-columns: 1fr;
+      }
+
+      .charts-section {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+
+      .chart-body {
+        padding: 15px;
+        height: 250px;
+      }
+
+      .time-filters {
+        justify-content: center;
+      }
+
+      .detailed-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-card {
+        padding: 20px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-chart-bar"></i> Statistiques</h2>
-            <a th:href="@{/dashboard}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Retour au dashboard
-            </a>
-        </div>
-        
-        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
-        
-        <div th:if="${statistics != null}">
-            <!-- Cards de statistiques -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Total incidents</h5>
-                            <h2 th:text="${statistics.totalIncidents}">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Incidents récents (30j)</h5>
-                            <h2 th:text="${statistics.recentIncidents}">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Résolus (30j)</h5>
-                            <h2 th:text="${statistics.resolvedLast30Days}">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Taux de résolution</h5>
-                            <h2 th:text="${statistics.resolutionRate} + '%'">0%</h2>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Graphiques -->
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Incidents par statut</h5>
-                            <canvas id="statusChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Incidents par catégorie</h5>
-                            <canvas id="categoryChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- Top Navigation -->
+<nav class="top-navbar">
+  <div class="main-container">
+    <div class="d-flex justify-content-between align-items-center">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-city me-2"></i>CiteSignal
+      </a>
+      <a th:href="@{/dashboard}" class="btn-back">
+        <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+      </a>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:if="${statistics != null}">
-        // Graphique des statuts
-        const statusData = /*[[${statistics.incidentsByStatus}]]*/ {};
-        const statusCtx = document.getElementById('statusChart');
-        if (statusCtx) {
-            new Chart(statusCtx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(statusData),
-                    datasets: [{
-                        label: 'Nombre d\'incidents',
-                        data: Object.values(statusData),
-                        backgroundColor: 'rgba(99, 102, 241, 0.5)'
-                    }]
-                }
-            });
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="/dashboard">
+            <i class="fas fa-home me-1"></i>Accueil
+          </a>
+        </li>
+        <li class="breadcrumb-item active">Statistiques</li>
+      </ol>
+    </nav>
+    <div>
+      <h1 class="page-title">
+        <i class="fas fa-chart-bar"></i>
+        Statistiques des incidents
+      </h1>
+      <p class="page-subtitle">
+        Analyse et visualisation des données de signalements dans votre ville
+      </p>
+    </div>
+
+    <!-- Time Filters -->
+    <div class="time-filters">
+      <a href="?period=7" class="time-filter" th:classappend="${currentPeriod == 7} ? 'active' : ''">
+        <i class="fas fa-calendar-week me-2"></i>7 derniers jours
+      </a>
+      <a href="?period=30" class="time-filter" th:classappend="${currentPeriod == 30 || currentPeriod == null} ? 'active' : ''">
+        <i class="fas fa-calendar-alt me-2"></i>30 derniers jours
+      </a>
+      <a href="?period=90" class="time-filter" th:classappend="${currentPeriod == 90} ? 'active' : ''">
+        <i class="fas fa-calendar me-2"></i>3 derniers mois
+      </a>
+      <a href="?period=365" class="time-filter" th:classappend="${currentPeriod == 365} ? 'active' : ''">
+        <i class="fas fa-calendar-year me-2"></i>12 derniers mois
+      </a>
+    </div>
+  </div>
+
+  <!-- Alert -->
+  <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+    <i class="fas fa-exclamation-circle"></i>
+    <span th:text="${errorMessage}"></span>
+  </div>
+
+  <div th:if="${successMessage}" class="alert alert-success" role="alert">
+    <i class="fas fa-check-circle"></i>
+    <span th:text="${successMessage}"></span>
+    <div th:if="${generatedReportId}" style="margin-top: 10px">
+      <a th:href="@{/user/admin/reports/download/{id}(id=${generatedReportId})}" class="btn btn-sm btn-outline-light ms-2">
+        <i class="fas fa-download"></i> Télécharger le rapport
+      </a>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div th:if="${statistics == null}" class="empty-state">
+    <div class="empty-state-icon">
+      <i class="fas fa-chart-line"></i>
+    </div>
+    <h2 class="empty-state-title">Aucune donnée disponible</h2>
+    <p class="empty-state-text">
+      Les statistiques ne sont pas encore disponibles.
+      <br>Revenez plus tard pour voir l'analyse des incidents.
+    </p>
+  </div>
+
+  <div th:if="${statistics != null}">
+    <!-- Debug Info (visible only for debugging - remove in production) -->
+    <div style="display: none;" id="debugData">
+      <span id="debugStatusData" th:text="${statistics.incidentsByStatus != null ? statistics.incidentsByStatus : '{}'}"></span>
+      <span id="debugCategoryData" th:text="${statistics.incidentsByCategory != null ? statistics.incidentsByCategory : '{}'}"></span>
+      <span id="debugQuartierData" th:text="${statistics.incidentsByQuartier != null ? statistics.incidentsByQuartier : '{}'}"></span>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+      <div class="stat-card total">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div>
+            <div class="stat-title">Total incidents</div>
+            <div class="stat-value" th:text="${statistics.totalIncidents}">0</div>
+            <div class="stat-subtitle">Depuis le début</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card recent">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div>
+            <div class="stat-title">Incidents récents</div>
+            <div class="stat-value" th:text="${statistics.recentIncidents}">0</div>
+            <div class="stat-subtitle" th:text="'Sur ' + ${currentPeriod == null ? 30 : currentPeriod} + ' jours'">Sur 30 jours</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card resolved">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div>
+            <div class="stat-title">Résolus</div>
+            <div class="stat-value" th:text="${statistics.resolvedLast30Days}">0</div>
+            <div class="stat-subtitle" th:text="'Sur ' + ${currentPeriod == null ? 30 : currentPeriod} + ' jours'">Sur 30 jours</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card rate">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-percentage"></i>
+          </div>
+          <div>
+            <div class="stat-title">Taux de résolution</div>
+            <div class="stat-value" th:text="${statistics.resolutionRate} + '%'">0%</div>
+            <div class="stat-subtitle">Efficacité globale</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+      <!-- Status Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3><i class="fas fa-chart-bar"></i> Répartition par statut</h3>
+        </div>
+        <div class="chart-body">
+          <canvas id="statusChart"></canvas>
+          <div id="statusChartEmpty" class="empty-chart" style="display: none;">
+            <i class="fas fa-chart-bar"></i>
+            <p>Aucune donnée de statut disponible</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3><i class="fas fa-chart-pie"></i> Répartition par catégorie</h3>
+        </div>
+        <div class="chart-body">
+          <canvas id="categoryChart"></canvas>
+          <div id="categoryChartEmpty" class="empty-chart" style="display: none;">
+            <i class="fas fa-chart-pie"></i>
+            <p>Aucune donnée de catégorie disponible</p>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- Report Generation Section -->
+    <div class="report-section">
+      <h2 class="section-title">
+        <i class="fas fa-file-export"></i>
+        Génération de rapports
+      </h2>
+      <div class="report-card">
+        <div class="report-form">
+          <form action="/user/admin/statistics/generate-report" method="post" class="report-form-content">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="dateDebut">Date de début</label>
+                <input type="date" id="dateDebut" name="dateDebut"
+                       th:value="${#temporals.format(#temporals.createNow().minusDays(30), 'yyyy-MM-dd')}"
+                       class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="dateFin">Date de fin</label>
+                <input type="date" id="dateFin" name="dateFin"
+                       th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                       class="form-control" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Format d'export</label>
+                <div class="format-options">
+                  <label class="format-option">
+                    <input type="radio" name="format" value="CSV" checked />
+                    <i class="fas fa-file-csv"></i>
+                    <span>CSV</span>
+                  </label>
+                  <label class="format-option">
+                    <input type="radio" name="format" value="PDF" />
+                    <i class="fas fa-file-pdf"></i>
+                    <span>PDF</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+              <button type="submit" class="btn-generate">
+                <i class="fas fa-file-export"></i>
+                Générer le rapport
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Statistics -->
+    <div class="detailed-stats">
+      <!-- Status Details -->
+      <div class="detail-card">
+        <h4><i class="fas fa-list-alt"></i> Détails par statut</h4>
+        <div class="stats-list">
+          <div th:each="entry : ${statistics.incidentsByStatus}" class="stat-item">
+            <div class="stat-label" th:text="${entry.key}">Statut</div>
+            <div class="stat-count" th:text="${entry.value}">0</div>
+          </div>
+          <div th:if="${statistics.incidentsByStatus == null or statistics.incidentsByStatus.isEmpty()}" class="stat-item">
+            <div class="stat-label" style="color: #94a3b8;">Aucune donnée</div>
+            <div class="stat-count" style="color: #94a3b8;">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Details -->
+      <div class="detail-card">
+        <h4><i class="fas fa-tags"></i> Détails par catégorie</h4>
+        <div class="stats-list">
+          <div th:each="entry : ${statistics.incidentsByCategory}" class="stat-item">
+            <div class="stat-label" th:text="${entry.key}">Catégorie</div>
+            <div class="stat-count" th:text="${entry.value}">0</div>
+          </div>
+          <div th:if="${statistics.incidentsByCategory == null or statistics.incidentsByCategory.isEmpty()}" class="stat-item">
+            <div class="stat-label" style="color: #94a3b8;">Aucune donnée</div>
+            <div class="stat-count" style="color: #94a3b8;">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quartier Details -->
+      <div class="detail-card">
+        <h4><i class="fas fa-map-marker-alt"></i> Détails par quartier</h4>
+        <div class="stats-list">
+          <div th:each="entry : ${statistics.incidentsByQuartier}" class="stat-item">
+            <div class="stat-label" th:text="${entry.key}">Quartier</div>
+            <div class="stat-count" th:text="${entry.value}">0</div>
+          </div>
+          <div th:if="${statistics.incidentsByQuartier == null or statistics.incidentsByQuartier.isEmpty()}" class="stat-item">
+            <div class="stat-label" style="color: #94a3b8;">Aucune donnée</div>
+            <div class="stat-count" style="color: #94a3b8;">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Fonction pour afficher un message d'absence de données
+  function showNoDataMessage(chartId) {
+    const emptyDiv = document.getElementById(chartId + 'Empty');
+    if (emptyDiv) {
+      emptyDiv.style.display = 'flex';
+    }
+    const canvas = document.getElementById(chartId);
+    if (canvas) {
+      canvas.style.display = 'none';
+    }
+  }
+
+  // Fonction pour cacher le message d'absence de données
+  function hideNoDataMessage(chartId) {
+    const emptyDiv = document.getElementById(chartId + 'Empty');
+    if (emptyDiv) {
+      emptyDiv.style.display = 'none';
+    }
+    const canvas = document.getElementById(chartId);
+    if (canvas) {
+      canvas.style.display = 'block';
+    }
+  }
+
+  // Vérifier si les statistiques sont disponibles
+  const hasStatistics = document.getElementById('debugData') !== null;
+
+  if (hasStatistics) {
+    // Chart Colors
+    const chartColors = {
+      primary: 'rgba(99, 102, 241, 0.8)',
+      secondary: 'rgba(139, 92, 246, 0.8)',
+      success: 'rgba(16, 185, 129, 0.8)',
+      warning: 'rgba(245, 158, 11, 0.8)',
+      danger: 'rgba(239, 68, 68, 0.8)',
+      info: 'rgba(59, 130, 246, 0.8)',
+      light: 'rgba(148, 163, 184, 0.8)'
+    };
+
+    // Fonction pour parser les données JSON depuis les attributs data
+    function parseJsonData(elementId) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        const text = element.textContent.trim();
+        console.log('Raw data for', elementId + ':', text);
+
+        if (text && text !== '{}' && text !== 'null') {
+          try {
+            // Essayez de parser comme JSON
+            return JSON.parse(text);
+          } catch (e) {
+            console.error('Erreur parsing JSON for', elementId + ':', e);
+            // Si ce n'est pas du JSON valide, essayez de convertir depuis un format Map Thymeleaf
+            if (text.startsWith('{') && text.endsWith('}')) {
+              // Essayez de nettoyer le format Thymeleaf
+              const cleanedText = text
+                      .replace(/=/g, ':')
+                      .replace(/(\w+)/g, '"$1"')
+                      .replace(/:\s*(\w+)/g, ': "$1"')
+                      .replace(/,(\s*\w+)/g, ', "$1"');
+              try {
+                return JSON.parse(cleanedText);
+              } catch (e2) {
+                console.error('Erreur parsing cleaned JSON:', e2);
+              }
+            }
+          }
         }
-        
-        // Graphique des catégories
-        const categoryData = /*[[${statistics.incidentsByCategory}]]*/ {};
-        const categoryCtx = document.getElementById('categoryChart');
-        if (categoryCtx) {
-            new Chart(categoryCtx, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(categoryData),
-                    datasets: [{
-                        data: Object.values(categoryData),
-                        backgroundColor: [
-                            'rgba(99, 102, 241, 0.5)',
-                            'rgba(16, 185, 129, 0.5)',
-                            'rgba(245, 158, 11, 0.5)',
-                            'rgba(239, 68, 68, 0.5)',
-                            'rgba(59, 130, 246, 0.5)'
-                        ]
-                    }]
+      }
+      return {};
+    }
+
+    // Extraire les données depuis les éléments HTML
+    const statusData = parseJsonData('debugStatusData');
+    const categoryData = parseJsonData('debugCategoryData');
+    const quartierData = parseJsonData('debugQuartierData');
+
+    console.log('Parsed status data:', statusData);
+    console.log('Parsed category data:', categoryData);
+    console.log('Parsed quartier data:', quartierData);
+
+    // Status Chart
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+      const statusLabels = Object.keys(statusData);
+      const statusValues = Object.values(statusData);
+
+      if (statusLabels.length > 0 && statusValues.length > 0 && statusValues.some(v => v > 0)) {
+        hideNoDataMessage('statusChart');
+
+        // Define colors for each status
+        const statusColors = statusLabels.map(label => {
+          const lowerLabel = label.toLowerCase();
+          if (lowerLabel.includes('résolu') || lowerLabel.includes('resolu') || lowerLabel.includes('résolue') || lowerLabel.includes('resolue')) return chartColors.success;
+          if (lowerLabel.includes('en cours') || lowerLabel.includes('resolution') || lowerLabel.includes('traitement')) return chartColors.warning;
+          if (lowerLabel.includes('pris en charge') || lowerLabel.includes('assigné') || lowerLabel.includes('assignee')) return chartColors.info;
+          if (lowerLabel.includes('signalé') || lowerLabel.includes('signale') || lowerLabel.includes('nouveau')) return chartColors.light;
+          if (lowerLabel.includes('fermé') || lowerLabel.includes('clos') || lowerLabel.includes('fermee')) return '#94a3b8';
+          if (lowerLabel.includes('annulé') || lowerLabel.includes('annule')) return chartColors.danger;
+          return chartColors.primary;
+        });
+
+        new Chart(statusCtx, {
+          type: 'bar',
+          data: {
+            labels: statusLabels,
+            datasets: [{
+              label: 'Nombre d\'incidents',
+              data: statusValues,
+              backgroundColor: statusColors,
+              borderColor: statusColors.map(color => color.replace('0.8', '1')),
+              borderWidth: 1,
+              borderRadius: 6,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                cornerRadius: 8,
+                padding: 12,
+                callbacks: {
+                  label: function(context) {
+                    const total = statusValues.reduce((a, b) => a + b, 0);
+                    const percentage = total > 0 ? ((context.parsed.y / total) * 100).toFixed(1) : 0;
+                    return `${context.parsed.y} incidents (${percentage}%)`;
+                  }
                 }
-            });
-        }
-    </script>
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                },
+                ticks: {
+                  color: '#64748b',
+                  precision: 0
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: '#64748b',
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              }
+            }
+          }
+        });
+      } else {
+        console.log('No valid status data for chart');
+        showNoDataMessage('statusChart');
+      }
+    }
+
+    // Category Chart
+    const categoryCtx = document.getElementById('categoryChart');
+    if (categoryCtx) {
+      const categoryLabels = Object.keys(categoryData);
+      const categoryValues = Object.values(categoryData);
+
+      if (categoryLabels.length > 0 && categoryValues.length > 0 && categoryValues.some(v => v > 0)) {
+        hideNoDataMessage('categoryChart');
+
+        // Define colors for categories
+        const categoryColors = [
+          chartColors.primary,
+          chartColors.secondary,
+          chartColors.success,
+          chartColors.warning,
+          chartColors.danger,
+          chartColors.info,
+          'rgba(168, 85, 247, 0.8)',
+          'rgba(236, 72, 153, 0.8)',
+          'rgba(249, 115, 22, 0.8)',
+          'rgba(6, 182, 212, 0.8)'
+        ];
+
+        new Chart(categoryCtx, {
+          type: 'doughnut',
+          data: {
+            labels: categoryLabels,
+            datasets: [{
+              data: categoryValues,
+              backgroundColor: categoryColors.slice(0, categoryLabels.length),
+              borderColor: 'white',
+              borderWidth: 2,
+              hoverOffset: 15,
+              hoverBorderColor: '#fff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: {
+                  color: '#475569',
+                  padding: 15,
+                  usePointStyle: true,
+                  pointStyle: 'circle',
+                  font: {
+                    size: 11
+                  },
+                  boxWidth: 10
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                cornerRadius: 8,
+                padding: 12,
+                callbacks: {
+                  label: function(context) {
+                    const total = categoryValues.reduce((a, b) => a + b, 0);
+                    const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                    return `${context.label}: ${context.parsed} (${percentage}%)`;
+                  }
+                }
+              }
+            },
+            cutout: '60%',
+            animation: {
+              animateScale: true,
+              animateRotate: true
+            }
+          }
+        });
+      } else {
+        console.log('No valid category data for chart');
+        showNoDataMessage('categoryChart');
+      }
+    }
+
+    // Quartier Chart
+    const quartierCtx = document.getElementById('quartierChart');
+    if (quartierCtx) {
+      const quartierLabels = Object.keys(quartierData);
+      const quartierValues = Object.values(quartierData);
+
+      if (quartierLabels.length > 0 && quartierValues.length > 0 && quartierValues.some(v => v > 0)) {
+        hideNoDataMessage('quartierChart');
+
+        // Define colors for quartiers
+        const quartierColors = [
+          chartColors.primary,
+          chartColors.secondary,
+          chartColors.success,
+          chartColors.warning,
+          chartColors.danger,
+          chartColors.info,
+          'rgba(168, 85, 247, 0.6)',
+          'rgba(236, 72, 153, 0.6)',
+          'rgba(249, 115, 22, 0.6)',
+          'rgba(6, 182, 212, 0.6)'
+        ];
+
+        new Chart(quartierCtx, {
+          type: 'bar',
+          data: {
+            labels: quartierLabels,
+            datasets: [{
+              label: 'Nombre d\'incidents',
+              data: quartierValues,
+              backgroundColor: quartierColors.slice(0, quartierLabels.length).map(color => color.replace('0.8', '0.6')),
+              borderColor: quartierColors.slice(0, quartierLabels.length),
+              borderWidth: 2,
+              borderRadius: 8,
+              borderSkipped: false,
+              hoverBackgroundColor: quartierColors.slice(0, quartierLabels.length)
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                cornerRadius: 8,
+                padding: 12,
+                callbacks: {
+                  label: function(context) {
+                    const total = quartierValues.reduce((a, b) => a + b, 0);
+                    const percentage = total > 0 ? ((context.parsed.y / total) * 100).toFixed(1) : 0;
+                    return `${context.parsed.y} incidents (${percentage}%)`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                },
+                ticks: {
+                  color: '#64748b',
+                  precision: 0,
+                  callback: function(value) {
+                    return Number.isInteger(value) ? value : '';
+                  }
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: '#64748b',
+                  maxRotation: 45,
+                  minRotation: 45,
+                  autoSkip: true,
+                  maxTicksLimit: 10
+                }
+              }
+            }
+          }
+        });
+      } else {
+        console.log('No valid quartier data for chart');
+        showNoDataMessage('quartierChart');
+      }
+    }
+  }
+</script>
 </body>
 </html>
-

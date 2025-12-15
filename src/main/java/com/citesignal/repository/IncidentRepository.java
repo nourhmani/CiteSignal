@@ -70,5 +70,10 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
     @Query("SELECT i FROM Incident i WHERE i.createdAt >= :dateDebut AND i.createdAt <= :dateFin")
     List<Incident> findByDateRange(@Param("dateDebut") LocalDateTime dateDebut, 
                                     @Param("dateFin") LocalDateTime dateFin);
+    
+    @Query("SELECT q.nom, COUNT(i) FROM Incident i JOIN i.quartier q GROUP BY q.nom ORDER BY COUNT(i) DESC")
+    List<Object[]> countIncidentsByQuartier();
+    List<Incident> findByCreatedAtBetween(LocalDateTime dateDebut, LocalDateTime dateFin);
+
 }
 

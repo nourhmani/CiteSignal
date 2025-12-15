@@ -8,7 +8,9 @@ import com.citesignal.service.CsvImportService;
 import com.citesignal.service.UserService;
 import com.citesignal.service.StatisticsService;
 import com.citesignal.service.IncidentService;
+import com.citesignal.service.RapportService;
 import com.citesignal.model.Incident;
+import com.citesignal.model.Rapport;
 import com.citesignal.repository.DepartementRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +41,9 @@ public class UserController {
     
     @Autowired
     private IncidentService incidentService;
+    
+    @Autowired
+    private RapportService rapportService;
     
     @Autowired
     private DepartementRepository departementRepository;
@@ -296,12 +301,81 @@ public class UserController {
     @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')")
     @GetMapping("/admin/statistics")
     public String showStatistics(Model model) {
+        System.out.println("=== DEBUG: showStatistics called ===");
         try {
             model.addAttribute("statistics", statisticsService.getGeneralStatistics());
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Erreur lors du chargement des statistiques: " + e.getMessage());
         }
         return "admin/statistics";
+    }
+
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')")
+    @PostMapping("/admin/statistics/generate-report")
+    public String generateReport(
+            @RequestParam("format") Rapport.FormatExport format,
+            @RequestParam(value = "dateDebut", required = false) String dateDebutStr,
+            @RequestParam(value = "dateFin", required = false) String dateFinStr,
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            RedirectAttributes redirectAttributes) {
+
+        System.out.println("=== DEBUG: generateReport called ===");
+        System.out.println("User: " + (userPrincipal != null ? userPrincipal.getUsername() : "null"));
+        System.out.println("Authorities: " + (userPrincipal != null ? userPrincipal.getAuthorities() : "null"));
+
+        try {
+            User user = userService.findById(userPrincipal.getId());
+            if (user == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Utilisateur non trouvé.");
+                return "redirect:/user/admin/statistics";
+            }
+
+            // Définir les dates par défaut (30 derniers jours)
+            java.time.LocalDate dateDebut = dateDebutStr != null && !dateDebutStr.isEmpty() ?
+                java.time.LocalDate.parse(dateDebutStr) : java.time.LocalDate.now().minusDays(30);
+            java.time.LocalDate dateFin = dateFinStr != null && !dateFinStr.isEmpty() ?
+                java.time.LocalDate.parse(dateFinStr) : java.time.LocalDate.now();
+
+            // Générer le rapport
+            Rapport rapport = rapportService.genererRapportStatistiques(user, dateDebut, dateFin, format);
+
+            redirectAttributes.addFlashAttribute("successMessage",
+                "Rapport généré avec succès !");
+            redirectAttributes.addFlashAttribute("generatedReportId", rapport.getId());
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                "Erreur lors de la génération du rapport: " + e.getMessage());
+        }
+
+        return "redirect:/user/admin/statistics";
+    }
+
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')")
+    @GetMapping("/admin/reports/download/{id}")
+    public org.springframework.http.ResponseEntity<org.springframework.core.io.Resource> downloadReport(@PathVariable Long id) {
+        try {
+            Rapport rapport = rapportService.findById(id);
+            if (rapport == null || rapport.getFichierChemin() == null) {
+                return org.springframework.http.ResponseEntity.notFound().build();
+            }
+
+            java.io.File file = new java.io.File(rapport.getFichierChemin());
+            if (!file.exists()) {
+                return org.springframework.http.ResponseEntity.notFound().build();
+            }
+
+            org.springframework.core.io.Resource resource = new org.springframework.core.io.FileSystemResource(file);
+
+            return org.springframework.http.ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + file.getName() + "\"")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM)
+                    .body(resource);
+
+        } catch (Exception e) {
+            return org.springframework.http.ResponseEntity.internalServerError().build();
+        }
     }
     
     // Liste des agents (accessible aux admins et superadmins)

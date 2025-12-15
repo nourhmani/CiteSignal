@@ -71,22 +71,65 @@ public class HomeController {
                 try {
                     model.addAttribute("statistics", statisticsService.getGeneralStatistics());
                     // Derniers incidents
-                    model.addAttribute("recentIncidents", 
-                            incidentService.searchIncidents(null, null, null, null, null, null, null, 
+                    model.addAttribute("recentIncidents",
+                            incidentService.searchIncidents(null, null, null, null, null, null, null,
                                     PageRequest.of(0, 10)).getContent());
+
+                    // Statistiques utilisateurs pour superadmin
+                    if (isSuperAdmin) {
+                        long totalUsers = userService.getAllUsers().size();
+                        long adminCount = userService.getUsersByRole(User.RoleName.ADMINISTRATEUR).size();
+                        long agentCount = userService.getUsersByRole(User.RoleName.AGENT_MUNICIPAL).size();
+                        long citizenCount = userService.getUsersByRole(User.RoleName.CITOYEN).size();
+
+                        model.addAttribute("totalUsers", totalUsers);
+                        model.addAttribute("adminCount", adminCount);
+                        model.addAttribute("agentCount", agentCount);
+                        model.addAttribute("citizenCount", citizenCount);
+                    }
                 } catch (Exception e) {
                     model.addAttribute("statistics", null);
                     model.addAttribute("recentIncidents", Collections.emptyList());
+                    if (isSuperAdmin) {
+                        model.addAttribute("totalUsers", 0L);
+                        model.addAttribute("adminCount", 0L);
+                        model.addAttribute("agentCount", 0L);
+                        model.addAttribute("citizenCount", 0L);
+                    }
                 }
                 return isSuperAdmin ? "dashboard-superadmin" : "dashboard-admin";
             } else if (isAgent) {
-                // Incidents assignés à l'agent
+                // Incidents assignés à l'agent et statistiques
                 try {
-                    model.addAttribute("myIncidents", 
-                            incidentService.getIncidentsByAgent(userPrincipal.getId(), 
-                                    PageRequest.of(0, 10)).getContent());
+                    List<com.citesignal.model.Incident> agentIncidents = incidentService.getIncidentsByAgent(userPrincipal.getId(), PageRequest.of(0, 1000)).getContent();
+                    model.addAttribute("myIncidents", agentIncidents.subList(0, Math.min(10, agentIncidents.size())));
+
+                    // Calculer les statistiques pour l'agent
+                    long pendingIncidents = agentIncidents.stream()
+                            .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.SIGNALE)
+                            .count();
+                    long inProgressIncidents = agentIncidents.stream()
+                            .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.PRIS_EN_CHARGE ||
+                                        i.getStatut() == com.citesignal.model.Incident.Statut.EN_RESOLUTION)
+                            .count();
+                    long resolvedIncidents = agentIncidents.stream()
+                            .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.RESOLU ||
+                                        i.getStatut() == com.citesignal.model.Incident.Statut.CLOTURE)
+                            .count();
+                    long todayIncidents = agentIncidents.stream()
+                            .filter(i -> i.getCreatedAt().toLocalDate().equals(java.time.LocalDate.now()))
+                            .count();
+
+                    model.addAttribute("pendingIncidents", pendingIncidents);
+                    model.addAttribute("inProgressIncidents", inProgressIncidents);
+                    model.addAttribute("resolvedIncidents", resolvedIncidents);
+                    model.addAttribute("todayIncidents", todayIncidents);
                 } catch (Exception e) {
                     model.addAttribute("myIncidents", Collections.emptyList());
+                    model.addAttribute("pendingIncidents", 0L);
+                    model.addAttribute("inProgressIncidents", 0L);
+                    model.addAttribute("resolvedIncidents", 0L);
+                    model.addAttribute("todayIncidents", 0L);
                 }
                 return "dashboard-agent";
             } else {
