@@ -180,7 +180,7 @@ public class UserController {
             
             redirectAttributes.addFlashAttribute("successMessage", 
                     "Agent municipal créé avec succès ! Les identifiants ont été envoyés par email.");
-            return "redirect:/user/admin/users";
+            return "redirect:/user/admin/agents";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             redirectAttributes.addFlashAttribute("createAgentRequest", createAgentRequest);
@@ -236,7 +236,7 @@ public class UserController {
                 "Erreur lors de l'import : " + e.getMessage());
         }
         
-        return "redirect:/user/admin/users";
+        return "redirect:/user/admin/agents";
     }
     
     // Endpoints pour SUPERADMIN - Création d'administrateurs
@@ -273,7 +273,7 @@ public class UserController {
             
             redirectAttributes.addFlashAttribute("successMessage", 
                     "Administrateur créé avec succès ! Les identifiants ont été envoyés par email.");
-            return "redirect:/user/admin/users";
+            return "redirect:/user/superadmin/admins";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             redirectAttributes.addFlashAttribute("createAdminRequest", createAdminRequest);
