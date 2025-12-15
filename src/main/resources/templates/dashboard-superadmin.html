@@ -287,6 +287,10 @@
         background: var(--info-color);
       }
 
+      .stat-card.danger::before {
+        background: var(--danger-color);
+      }
+
       .stat-header {
         display: flex;
         justify-content: space-between;
@@ -530,6 +534,77 @@
         color: #94a3b8;
       }
 
+      /* Recent Incidents */
+      .recent-incidents-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .incident-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 15px;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+      }
+
+      .incident-item:hover {
+        background: rgba(99, 102, 241, 0.05);
+        border-radius: 8px;
+        margin: 0 -15px;
+        padding: 15px 30px;
+      }
+
+      .incident-item:last-child {
+        border-bottom: none;
+      }
+
+      .incident-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+
+      .incident-content {
+        flex: 1;
+      }
+
+      .incident-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 4px;
+      }
+
+      .incident-description {
+        font-size: 13px;
+        color: #64748b;
+        margin-bottom: 4px;
+      }
+
+      .incident-time {
+        font-size: 12px;
+        color: #94a3b8;
+      }
+
+      .no-incidents {
+        text-align: center;
+        padding: 40px 20px;
+        color: #64748b;
+      }
+
+      .no-incidents i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        opacity: 0.5;
+      }
+
       @media (max-width: 1200px) {
         .chart-section {
           grid-template-columns: 1fr;
@@ -686,9 +761,9 @@
             <div class="stat-icon primary">
               <i class="fas fa-users"></i>
             </div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 15%</div>
+            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> Total</div>
           </div>
-          <div class="stat-value">1,542</div>
+          <div class="stat-value" th:text="${totalUsers != null ? totalUsers : 0}">1,542</div>
           <div class="stat-label">Utilisateurs totaux</div>
         </div>
 
@@ -697,9 +772,9 @@
             <div class="stat-icon success">
               <i class="fas fa-user-shield"></i>
             </div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 10%</div>
+            <div class="stat-trend neutral"><i class="fas fa-crown"></i> Admins</div>
           </div>
-          <div class="stat-value">12</div>
+          <div class="stat-value" th:text="${adminCount != null ? adminCount : 0}">12</div>
           <div class="stat-label">Administrateurs</div>
         </div>
 
@@ -708,21 +783,96 @@
             <div class="stat-icon warning">
               <i class="fas fa-user-tie"></i>
             </div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 8%</div>
+            <div class="stat-trend neutral"><i class="fas fa-tools"></i> Agents</div>
           </div>
-          <div class="stat-value">45</div>
+          <div class="stat-value" th:text="${agentCount != null ? agentCount : 0}">45</div>
           <div class="stat-label">Agents municipaux</div>
         </div>
 
         <div class="stat-card info">
           <div class="stat-header">
             <div class="stat-icon info">
-              <i class="fas fa-exclamation-circle"></i>
+              <i class="fas fa-users-cog"></i>
             </div>
-            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 12%</div>
+            <div class="stat-trend neutral"><i class="fas fa-home"></i> Citoyens</div>
           </div>
-          <div class="stat-value">678</div>
+          <div class="stat-value" th:text="${citizenCount != null ? citizenCount : 0}">678</div>
+          <div class="stat-label">Citoyens inscrits</div>
+        </div>
+      </div>
+
+      <!-- Incident Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card primary">
+          <div class="stat-header">
+            <div class="stat-icon primary">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-trend up">
+              <i class="fas fa-arrow-up"></i> Actif
+            </div>
+          </div>
+          <div
+            class="stat-value"
+            th:text="${statistics != null ? statistics.totalIncidents : 0}"
+          >
+            1,247
+          </div>
+          <div class="stat-label">Incidents totaux</div>
+        </div>
+
+        <div class="stat-card success">
+          <div class="stat-header">
+            <div class="stat-icon success">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-trend neutral">
+              <i class="fas fa-minus"></i> En cours
+            </div>
+          </div>
+          <div
+            class="stat-value"
+            th:text="${statistics != null and statistics.incidentsByStatus != null ? statistics.incidentsByStatus.get('SIGNALE') : 0}"
+          >
+            342
+          </div>
           <div class="stat-label">Incidents signalés</div>
+        </div>
+
+        <div class="stat-card warning">
+          <div class="stat-header">
+            <div class="stat-icon warning">
+              <i class="fas fa-tools"></i>
+            </div>
+            <div class="stat-trend neutral">
+              <i class="fas fa-tools"></i> Traitement
+            </div>
+          </div>
+          <div
+            class="stat-value"
+            th:text="${statistics != null and statistics.incidentsByStatus != null ? (statistics.incidentsByStatus.get('PRIS_EN_CHARGE') + statistics.incidentsByStatus.get('EN_RESOLUTION')) : 0}"
+          >
+            89
+          </div>
+          <div class="stat-label">En cours de traitement</div>
+        </div>
+
+        <div class="stat-card danger">
+          <div class="stat-header">
+            <div class="stat-icon danger">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-trend up">
+              <i class="fas fa-arrow-up"></i> Résolus
+            </div>
+          </div>
+          <div
+            class="stat-value"
+            th:text="${statistics != null and statistics.incidentsByStatus != null ? (statistics.incidentsByStatus.get('RESOLU') + statistics.incidentsByStatus.get('CLOTURE')) : 0}"
+          >
+            24
+          </div>
+          <div class="stat-label">Incidents résolus</div>
         </div>
       </div>
 
@@ -733,15 +883,7 @@
           Actions rapides
         </h2>
         <div class="actions-grid">
-          <a href="/user/admin/users" class="action-card">
-            <div class="action-icon primary">
-              <i class="fas fa-users-cog"></i>
-            </div>
-            <div class="action-content">
-              <h4>Gérer les utilisateurs</h4>
-              <p>Voir et gérer tous les utilisateurs</p>
-            </div>
-          </a>
+
 
           <a href="/user/superadmin/create-admin" class="action-card">
             <div class="action-icon success">
@@ -783,15 +925,7 @@
             </div>
           </a>
 
-          <a href="/user/profile" class="action-card">
-            <div class="action-icon success">
-              <i class="fas fa-user-circle"></i>
-            </div>
-            <div class="action-content">
-              <h4>Mon profil</h4>
-              <p>Gérer mes informations</p>
-            </div>
-          </a>
+
         </div>
       </div>
 
@@ -810,49 +944,33 @@
         <div class="chart-card">
           <h2 class="section-title">
             <i class="fas fa-history"></i>
-            Activité récente
+            Incidents récents
           </h2>
-          <ul class="activity-list">
-            <li class="activity-item">
-              <div
-                class="activity-icon"
-                style="background: rgba(111, 66, 193, 0.1); color: #6f42c1"
-              >
-                <i class="fas fa-user-shield"></i>
+          <div class="recent-incidents-list">
+            <div th:if="${recentIncidents != null and !recentIncidents.isEmpty()}" th:each="incident : ${recentIncidents}" class="incident-item">
+              <div class="incident-icon"
+                   th:style="'background: ' + ${incident.statut == 'SIGNALE' ? 'rgba(245, 158, 11, 0.1); color: #f59e0b' :
+                                           incident.statut == 'PRIS_EN_CHARGE' ? 'rgba(59, 130, 246, 0.1); color: #3b82f6' :
+                                           incident.statut == 'EN_RESOLUTION' ? 'rgba(16, 185, 129, 0.1); color: #10b981' :
+                                           incident.statut == 'RESOLU' ? 'rgba(16, 185, 129, 0.1); color: #10b981' :
+                                           'rgba(239, 68, 68, 0.1); color: #ef4444'}">
+                <i th:class="'fas ' + ${incident.statut == 'SIGNALE' ? 'fa-exclamation-triangle' :
+                                       incident.statut == 'PRIS_EN_CHARGE' ? 'fa-clock' :
+                                       incident.statut == 'EN_RESOLUTION' ? 'fa-tools' :
+                                       incident.statut == 'RESOLU' ? 'fa-check-circle' :
+                                       'fa-times-circle'}"></i>
               </div>
-              <div class="activity-content">
-                <div class="activity-title">Nouvel administrateur</div>
-                <div class="activity-description">Ahmed Ben Ali a été créé</div>
-                <div class="activity-time">Il y a 10 minutes</div>
+              <div class="incident-content">
+                <div class="incident-title" th:text="${incident.titre}">Titre de l'incident</div>
+                <div class="incident-description" th:text="${incident.adresse}">Adresse</div>
+                <div class="incident-time" th:text="${#temporals.format(incident.createdAt, 'dd/MM/yyyy à HH:mm')}">Date</div>
               </div>
-            </li>
-            <li class="activity-item">
-              <div
-                class="activity-icon"
-                style="background: rgba(16, 185, 129, 0.1); color: #10b981"
-              >
-                <i class="fas fa-user-plus"></i>
-              </div>
-              <div class="activity-content">
-                <div class="activity-title">Nouvel agent municipal</div>
-                <div class="activity-description">Fatma Trabelsi ajoutée</div>
-                <div class="activity-time">Il y a 45 minutes</div>
-              </div>
-            </li>
-            <li class="activity-item">
-              <div
-                class="activity-icon"
-                style="background: rgba(245, 158, 11, 0.1); color: #f59e0b"
-              >
-                <i class="fas fa-file-import"></i>
-              </div>
-              <div class="activity-content">
-                <div class="activity-title">Import CSV réussi</div>
-                <div class="activity-description">15 agents importés</div>
-                <div class="activity-time">Il y a 2 heures</div>
-              </div>
-            </li>
-          </ul>
+            </div>
+            <div th:if="${recentIncidents == null or recentIncidents.isEmpty()}" class="no-incidents">
+              <i class="fas fa-info-circle"></i>
+              <p>Aucun incident récent</p>
+            </div>
+          </div>
         </div>
       </div>
     </main>

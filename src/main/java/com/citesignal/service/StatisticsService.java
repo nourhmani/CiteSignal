@@ -39,6 +39,16 @@ public class StatisticsService {
         }
         stats.put("incidentsByCategory", incidentsByCategory);
         
+        // Incidents par quartier
+        List<Object[]> quartierStats = incidentRepository.countIncidentsByQuartier();
+        Map<String, Long> incidentsByQuartier = new HashMap<>();
+        for (Object[] row : quartierStats) {
+            String quartierName = (String) row[0];
+            Long count = (Long) row[1];
+            incidentsByQuartier.put(quartierName != null ? quartierName : "Non spécifié", count);
+        }
+        stats.put("incidentsByQuartier", incidentsByQuartier);
+        
         // Incidents des 30 derniers jours
         LocalDateTime date30DaysAgo = LocalDateTime.now().minusDays(30);
         List<Incident> recentIncidents = incidentRepository.findByDateRange(

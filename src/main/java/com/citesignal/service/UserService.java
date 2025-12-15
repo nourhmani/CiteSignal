@@ -234,6 +234,10 @@ public class UserService {
                 .collect(java.util.stream.Collectors.toList());
     }
     
+    public User findById(Long id) {
+        return userRepository.findById(id).orElse(null);
+    }
+    
     @Transactional
     public User updateUser(User user) {
         return userRepository.save(user);
