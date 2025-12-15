@@ -617,13 +617,13 @@
             </a>
         </li>
         <li class="menu-item">
-            <a href="#" class="menu-link">
+            <a th:href="@{/incidents/create}" class="menu-link">
                 <i class="fas fa-plus-circle"></i>
                 <span>Nouveau signalement</span>
             </a>
         </li>
         <li class="menu-item">
-            <a href="/user/history" class="menu-link">
+            <a th:href="@{/user/history}" class="menu-link">
                 <i class="fas fa-history"></i>
                 <span>Mes signalements</span>
             </a>
@@ -647,6 +647,7 @@
             </div>
         </div>
         <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <button type="submit" class="btn-logout">
                 <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
             </button>
@@ -696,7 +697,7 @@
                     Total
                 </div>
             </div>
-            <div class="stat-value">12</div>
+            <div class="stat-value" th:text="${totalIncidents != null ? totalIncidents : 0}">0</div>
             <div class="stat-label">Mes signalements</div>
         </div>
 
@@ -706,10 +707,10 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-badge warning">
-                    En cours
+                    En attente
                 </div>
             </div>
-            <div class="stat-value">5</div>
+            <div class="stat-value" th:text="${enAttente != null ? enAttente : 0}">0</div>
             <div class="stat-label">En attente de traitement</div>
         </div>
 
@@ -722,7 +723,7 @@
                     Résolu
                 </div>
             </div>
-            <div class="stat-value">7</div>
+            <div class="stat-value" th:text="${resolus != null ? resolus : 0}">0</div>
             <div class="stat-label">Incidents résolus</div>
         </div>
     </div>
@@ -734,7 +735,7 @@
             Actions rapides
         </h2>
         <div class="actions-grid">
-            <a href="#" class="action-card">
+            <a th:href="@{/incidents/create}" class="action-card">
                 <div class="action-icon success">
                     <i class="fas fa-plus-circle"></i>
                 </div>
@@ -744,7 +745,7 @@
                 </div>
             </a>
 
-            <a href="/user/history" class="action-card">
+            <a th:href="@{/user/history}" class="action-card">
                 <div class="action-icon primary">
                     <i class="fas fa-history"></i>
                 </div>
@@ -773,50 +774,57 @@
             Mes derniers signalements
         </h2>
 
-        <div class="report-item">
-            <div class="report-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
-                <i class="fas fa-lightbulb"></i>
-            </div>
-            <div class="report-content">
-                <div class="report-title">Lampadaire défectueux</div>
-                <div class="report-description">Avenue Habib Bourguiba, près du café</div>
-                <div class="report-meta">Signalé il y a 2 jours</div>
-            </div>
-            <div class="report-status pending">
-                <i class="fas fa-clock"></i> En attente
-            </div>
-        </div>
-
-        <div class="report-item">
-            <div class="report-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
-                <i class="fas fa-road"></i>
-            </div>
-            <div class="report-content">
-                <div class="report-title">Nid de poule</div>
-                <div class="report-description">Rue de la République, devant la poste</div>
-                <div class="report-meta">Signalé il y a 5 jours</div>
-            </div>
-            <div class="report-status in-progress">
-                <i class="fas fa-tools"></i> En cours
-            </div>
-        </div>
-
-        <div class="report-item">
-            <div class="report-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
-                <i class="fas fa-tree"></i>
-            </div>
-            <div class="report-content">
-                <div class="report-title">Arbre dangereux</div>
-                <div class="report-description">Parc central, branche cassée</div>
-                <div class="report-meta">Signalé il y a 1 semaine</div>
-            </div>
-            <div class="report-status resolved">
-                <i class="fas fa-check"></i> Résolu
+        <div th:if="${myIncidents != null && !myIncidents.isEmpty()}">
+            <div th:each="incident : ${myIncidents}" class="report-item">
+                <div class="report-icon" 
+                     th:style="'background: rgba(245, 158, 11, 0.1); color: #f59e0b;'">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="report-content">
+                    <div class="report-title">
+                        <a th:href="@{/incidents/{id}(id=${incident.id})}" 
+                           th:text="${incident.titre}"
+                           style="text-decoration: none; color: inherit;">
+                            Titre de l'incident
+                        </a>
+                    </div>
+                    <div class="report-description" th:text="${incident.adresse}">
+                        Adresse
+                    </div>
+                    <div class="report-meta">
+                        Signalé le 
+                        <span th:text="${#temporals.format(incident.createdAt, 'dd/MM/yyyy à HH:mm')}">
+                            Date
+                        </span>
+                        <span th:if="${incident.quartier != null}">
+                            - <span th:text="${incident.quartier.nom}">Quartier</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="report-status" 
+                     th:classappend="${incident.statut.name() == 'SIGNALE'} ? 'pending' : 
+                                    (${incident.statut.name() == 'PRIS_EN_CHARGE' || incident.statut.name() == 'EN_RESOLUTION'} ? 'in-progress' : 
+                                    (${incident.statut.name() == 'RESOLU' || incident.statut.name() == 'CLOTURE'} ? 'resolved' : 'pending'))">
+                    <i th:classappend="${incident.statut.name() == 'SIGNALE'} ? 'fas fa-clock' : 
+                                   (${incident.statut.name() == 'PRIS_EN_CHARGE' || incident.statut.name() == 'EN_RESOLUTION'} ? 'fas fa-tools' : 
+                                   (${incident.statut.name() == 'RESOLU' || incident.statut.name() == 'CLOTURE'} ? 'fas fa-check' : 'fas fa-clock'))"></i>
+                    <span th:text="${incident.statut}">Statut</span>
+                </div>
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="/user/history" class="btn btn-primary" style="padding: 12px 30px; border-radius: 10px; font-weight: 600;">
+        <div th:if="${myIncidents == null || myIncidents.isEmpty()}" class="text-center py-5">
+            <i class="fas fa-inbox" style="font-size: 48px; color: #cbd5e1; margin-bottom: 15px;"></i>
+            <p style="color: #64748b; font-size: 16px; margin-bottom: 20px;">
+                Vous n'avez pas encore signalé d'incident.
+            </p>
+            <a th:href="@{/incidents/create}" class="btn btn-primary" style="padding: 12px 30px; border-radius: 10px; font-weight: 600;">
+                <i class="fas fa-plus-circle"></i> Créer mon premier signalement
+            </a>
+        </div>
+
+        <div th:if="${myIncidents != null && !myIncidents.isEmpty()}" style="text-align: center; margin-top: 20px;">
+            <a th:href="@{/user/history}" class="btn btn-primary" style="padding: 12px 30px; border-radius: 10px; font-weight: 600;">
                 <i class="fas fa-list"></i> Voir tous mes signalements
             </a>
         </div>

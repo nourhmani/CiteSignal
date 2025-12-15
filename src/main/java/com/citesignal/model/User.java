@@ -74,6 +74,10 @@ public class User {
     @Column(name = "role", nullable = false, length = 50)
     private RoleName role;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "departement_id")
+    private Departement departement;
+    
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

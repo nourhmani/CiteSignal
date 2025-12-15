@@ -1,542 +1,611 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Importer des agents municipaux - CiteSignal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
-        :root {
-            --primary-color: #6366f1;
-            --secondary-color: #8b5cf6;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --dark-color: #1e293b;
-            --light-bg: #f8fafc;
-        }
+      :root {
+        --primary-color: #6366f1;
+        --secondary-color: #8b5cf6;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --dark-color: #1e293b;
+        --light-bg: #f8fafc;
+      }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--light-bg);
-            min-height: 100vh;
-            padding: 30px 20px;
-        }
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: var(--light-bg);
+        min-height: 100vh;
+        padding: 30px 20px;
+      }
 
-        .top-navbar {
-            background: white;
-            padding: 20px 30px;
-            border-radius: 16px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
-        }
+      .top-navbar {
+        background: white;
+        padding: 20px 30px;
+        border-radius: 16px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+      }
 
-        .navbar-brand {
-            font-size: 24px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-decoration: none;
-        }
+      .navbar-brand {
+        font-size: 24px;
+        font-weight: 700;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+      }
 
-        .btn-back {
-            padding: 10px 20px;
-            background: var(--light-bg);
-            color: var(--dark-color);
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
+      .btn-back {
+        padding: 10px 20px;
+        background: var(--light-bg);
+        color: var(--dark-color);
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
 
-        .btn-back:hover {
-            background: #e2e8f0;
-            color: var(--dark-color);
-        }
+      .btn-back:hover {
+        background: #e2e8f0;
+        color: var(--dark-color);
+      }
 
-        .form-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
+      .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
 
-        .form-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
+      .form-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
 
-        .form-header {
-            background: linear-gradient(135deg, var(--success-color), #059669);
-            padding: 40px 30px;
-            color: white;
-            text-align: center;
-        }
+      .form-header {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        padding: 40px 30px;
+        color: white;
+        text-align: center;
+      }
 
-        .form-icon {
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            backdrop-filter: blur(10px);
-        }
+      .form-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        backdrop-filter: blur(10px);
+      }
 
-        .form-icon i {
-            font-size: 40px;
-        }
+      .form-icon i {
+        font-size: 40px;
+      }
 
-        .form-header h2 {
-            font-size: 26px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
+      .form-header h2 {
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
 
-        .form-header p {
-            opacity: 0.95;
-            font-size: 15px;
-        }
+      .form-header p {
+        opacity: 0.95;
+        font-size: 15px;
+      }
 
+      .form-body {
+        padding: 40px 35px;
+      }
+
+      .info-section {
+        background: linear-gradient(
+          135deg,
+          rgba(59, 130, 246, 0.1),
+          rgba(99, 102, 241, 0.1)
+        );
+        border-left: 4px solid var(--primary-color);
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+      }
+
+      .info-section h5 {
+        color: var(--dark-color);
+        font-weight: 700;
+        font-size: 18px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+      }
+
+      .info-section h5 i {
+        color: var(--primary-color);
+        margin-right: 10px;
+      }
+
+      .info-section p {
+        color: #475569;
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+
+      .info-section ul {
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 15px;
+      }
+
+      .info-section ul li {
+        padding: 8px 0;
+        color: #475569;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+      }
+
+      .info-section ul li i {
+        color: var(--success-color);
+        margin-right: 10px;
+        font-size: 12px;
+      }
+
+      .info-section ul li strong {
+        color: var(--dark-color);
+        font-weight: 600;
+        margin-right: 6px;
+      }
+
+      .csv-example {
+        background: #1e293b;
+        color: #e2e8f0;
+        padding: 20px;
+        border-radius: 10px;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+        overflow-x: auto;
+        margin: 15px 0;
+        border: 1px solid #334155;
+      }
+
+      .download-link {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 18px;
+        background: white;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+      }
+
+      .download-link:hover {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .download-link i {
+        margin-right: 8px;
+      }
+
+      .upload-section {
+        background: white;
+        border: 3px dashed #cbd5e1;
+        border-radius: 16px;
+        padding: 40px;
+        text-align: center;
+        margin: 30px 0;
+        transition: all 0.3s ease;
+      }
+
+      .upload-section:hover {
+        border-color: var(--primary-color);
+        background: rgba(99, 102, 241, 0.02);
+      }
+
+      .upload-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+      }
+
+      .upload-icon i {
+        font-size: 36px;
+        color: var(--primary-color);
+      }
+
+      .upload-section h4 {
+        color: var(--dark-color);
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .upload-section p {
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+
+      .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+      }
+
+      .file-input-wrapper input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+
+      .file-input-label {
+        padding: 14px 30px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: white;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-block;
+      }
+
+      .file-input-label:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+      }
+
+      .file-selected {
+        margin-top: 15px;
+        padding: 12px 18px;
+        background: #d1fae5;
+        color: #065f46;
+        border-radius: 10px;
+        display: none;
+      }
+
+      .warning-box {
+        background: linear-gradient(
+          135deg,
+          rgba(245, 158, 11, 0.1),
+          rgba(251, 191, 36, 0.1)
+        );
+        border-left: 4px solid var(--warning-color);
+        padding: 20px;
+        border-radius: 12px;
+        margin: 25px 0;
+      }
+
+      .warning-box strong {
+        color: var(--dark-color);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .warning-box strong i {
+        color: var(--warning-color);
+        margin-right: 10px;
+        font-size: 18px;
+      }
+
+      .warning-box ul {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+      }
+
+      .warning-box ul li {
+        padding: 6px 0;
+        color: #475569;
+        font-size: 14px;
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .warning-box ul li i {
+        color: var(--warning-color);
+        margin-right: 10px;
+        margin-top: 4px;
+        font-size: 10px;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        margin-top: 30px;
+        padding-top: 25px;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .btn-cancel {
+        padding: 14px 30px;
+        background: #f1f5f9;
+        color: var(--dark-color);
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .btn-cancel:hover {
+        background: #e2e8f0;
+        color: var(--dark-color);
+      }
+
+      .btn-submit {
+        padding: 14px 30px;
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      }
+
+      .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+      }
+
+      .alert {
+        padding: 16px 20px;
+        border-radius: 12px;
+        border: none;
+        margin-bottom: 25px;
+      }
+
+      .alert-danger {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      @media (max-width: 768px) {
         .form-body {
-            padding: 40px 35px;
-        }
-
-        .info-section {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1));
-            border-left: 4px solid var(--primary-color);
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-        }
-
-        .info-section h5 {
-            color: var(--dark-color);
-            font-weight: 700;
-            font-size: 18px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .info-section h5 i {
-            color: var(--primary-color);
-            margin-right: 10px;
-        }
-
-        .info-section p {
-            color: #475569;
-            font-size: 14px;
-            margin-bottom: 12px;
-        }
-
-        .info-section ul {
-            list-style: none;
-            padding-left: 0;
-            margin-bottom: 15px;
-        }
-
-        .info-section ul li {
-            padding: 8px 0;
-            color: #475569;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-        }
-
-        .info-section ul li i {
-            color: var(--success-color);
-            margin-right: 10px;
-            font-size: 12px;
-        }
-
-        .info-section ul li strong {
-            color: var(--dark-color);
-            font-weight: 600;
-            margin-right: 6px;
-        }
-
-        .csv-example {
-            background: #1e293b;
-            color: #e2e8f0;
-            padding: 20px;
-            border-radius: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            overflow-x: auto;
-            margin: 15px 0;
-            border: 1px solid #334155;
-        }
-
-        .download-link {
-            display: inline-flex;
-            align-items: center;
-            padding: 10px 18px;
-            background: white;
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .download-link:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .download-link i {
-            margin-right: 8px;
+          padding: 30px 25px;
         }
 
         .upload-section {
-            background: white;
-            border: 3px dashed #cbd5e1;
-            border-radius: 16px;
-            padding: 40px;
-            text-align: center;
-            margin: 30px 0;
-            transition: all 0.3s ease;
-        }
-
-        .upload-section:hover {
-            border-color: var(--primary-color);
-            background: rgba(99, 102, 241, 0.02);
-        }
-
-        .upload-icon {
-            width: 80px;
-            height: 80px;
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-        }
-
-        .upload-icon i {
-            font-size: 36px;
-            color: var(--primary-color);
-        }
-
-        .upload-section h4 {
-            color: var(--dark-color);
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .upload-section p {
-            color: #64748b;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-        }
-
-        .file-input-wrapper input[type="file"] {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .file-input-label {
-            padding: 14px 30px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-
-        .file-input-label:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-        }
-
-        .file-selected {
-            margin-top: 15px;
-            padding: 12px 18px;
-            background: #d1fae5;
-            color: #065f46;
-            border-radius: 10px;
-            display: none;
-        }
-
-        .warning-box {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1));
-            border-left: 4px solid var(--warning-color);
-            padding: 20px;
-            border-radius: 12px;
-            margin: 25px 0;
-        }
-
-        .warning-box strong {
-            color: var(--dark-color);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .warning-box strong i {
-            color: var(--warning-color);
-            margin-right: 10px;
-            font-size: 18px;
-        }
-
-        .warning-box ul {
-            list-style: none;
-            padding-left: 0;
-            margin: 0;
-        }
-
-        .warning-box ul li {
-            padding: 6px 0;
-            color: #475569;
-            font-size: 14px;
-            display: flex;
-            align-items: flex-start;
-        }
-
-        .warning-box ul li i {
-            color: var(--warning-color);
-            margin-right: 10px;
-            margin-top: 4px;
-            font-size: 10px;
+          padding: 30px 20px;
         }
 
         .form-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: flex-end;
-            margin-top: 30px;
-            padding-top: 25px;
-            border-top: 1px solid #e2e8f0;
+          flex-direction: column;
         }
 
-        .btn-cancel {
-            padding: 14px 30px;
-            background: #f1f5f9;
-            color: var(--dark-color);
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 15px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .btn-cancel:hover {
-            background: #e2e8f0;
-            color: var(--dark-color);
-        }
-
+        .btn-cancel,
         .btn-submit {
-            padding: 14px 30px;
-            background: linear-gradient(135deg, var(--success-color), #059669);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+          width: 100%;
         }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-        }
-
-        .alert {
-            padding: 16px 20px;
-            border-radius: 12px;
-            border: none;
-            margin-bottom: 25px;
-        }
-
-        .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        @media (max-width: 768px) {
-            .form-body {
-                padding: 30px 25px;
-            }
-
-            .upload-section {
-                padding: 30px 20px;
-            }
-
-            .form-actions {
-                flex-direction: column;
-            }
-
-            .btn-cancel, .btn-submit {
-                width: 100%;
-            }
-        }
+      }
     </style>
-</head>
-<body>
-<div class="container">
-    <div class="top-navbar">
+  </head>
+  <body>
+    <div class="container">
+      <div class="top-navbar">
         <div class="d-flex justify-content-between align-items-center">
-            <a class="navbar-brand" href="/dashboard">
-                <i class="fas fa-city me-2"></i>CiteSignal
-            </a>
-            <a href="/dashboard" class="btn-back">
-                <i class="fas fa-arrow-left me-2"></i>Retour
-            </a>
+          <a class="navbar-brand" href="/dashboard">
+            <i class="fas fa-city me-2"></i>CiteSignal
+          </a>
+          <a href="/user/admin/agents" class="btn-back">
+            <i class="fas fa-arrow-left me-2"></i>Retour
+          </a>
         </div>
-    </div>
+      </div>
 
-    <div class="form-container">
+      <div class="form-container">
         <div class="form-card">
-            <div class="form-header">
-                <div class="form-icon">
-                    <i class="fas fa-file-import"></i>
-                </div>
-                <h2>Importer des Agents Municipaux</h2>
-                <p>Ajoutez plusieurs agents en une seule fois via un fichier CSV</p>
+          <div class="form-header">
+            <div class="form-icon">
+              <i class="fas fa-file-import"></i>
+            </div>
+            <h2>Importer des Agents Municipaux</h2>
+            <p>Ajoutez plusieurs agents en une seule fois via un fichier CSV</p>
+          </div>
+
+          <div class="form-body">
+            <div
+              th:if="${errorMessage}"
+              class="alert alert-danger"
+              role="alert"
+            >
+              <pre
+                th:text="${errorMessage}"
+                style="white-space: pre-wrap; margin: 0; font-size: 13px"
+              ></pre>
             </div>
 
-            <div class="form-body">
-                <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
-                    <pre th:text="${errorMessage}" style="white-space: pre-wrap; margin: 0; font-size: 13px;"></pre>
-                </div>
+            <div class="info-section">
+              <h5>
+                <i class="fas fa-info-circle"></i>
+                Format du fichier CSV
+              </h5>
+              <p>
+                Votre fichier CSV doit contenir les colonnes suivantes (l'ordre
+                peut varier, mais nom, prenom et email doivent être présents) :
+              </p>
+              <ul>
+                <li>
+                  <i class="fas fa-circle"></i>
+                  <strong>nom</strong> (obligatoire) - Nom de famille de l'agent
+                </li>
+                <li>
+                  <i class="fas fa-circle"></i>
+                  <strong>prenom</strong> (obligatoire) - Prénom de l'agent
+                </li>
+                <li>
+                  <i class="fas fa-circle"></i>
+                  <strong>email</strong> (obligatoire) - Adresse email
+                  professionnelle
+                </li>
+                <li>
+                  <i class="fas fa-circle"></i>
+                  <strong>telephone</strong> (optionnel) - Numéro de téléphone
+                </li>
+                <li>
+                  <i class="fas fa-circle"></i>
+                  <strong>adresse</strong> (optionnel) - Adresse complète
+                </li>
+                <li>
+                  <i class="fas fa-circle"></i>
+                  <strong>departement</strong> (obligatoire) - Nom du
+                  département (ex: "Voirie et Infrastructure")
+                </li>
+              </ul>
 
-                <div class="info-section">
-                    <h5>
-                        <i class="fas fa-info-circle"></i>
-                        Format du fichier CSV
-                    </h5>
-                    <p>Votre fichier CSV doit contenir les colonnes suivantes dans cet ordre :</p>
-                    <ul>
-                        <li>
-                            <i class="fas fa-circle"></i>
-                            <strong>nom</strong> (obligatoire) - Nom de famille de l'agent
-                        </li>
-                        <li>
-                            <i class="fas fa-circle"></i>
-                            <strong>prenom</strong> (obligatoire) - Prénom de l'agent
-                        </li>
-                        <li>
-                            <i class="fas fa-circle"></i>
-                            <strong>email</strong> (obligatoire) - Adresse email professionnelle
-                        </li>
-                        <li>
-                            <i class="fas fa-circle"></i>
-                            <strong>telephone</strong> (optionnel) - Numéro de téléphone
-                        </li>
-                        <li>
-                            <i class="fas fa-circle"></i>
-                            <strong>adresse</strong> (optionnel) - Adresse complète
-                        </li>
-                    </ul>
+              <p style="margin-top: 20px; margin-bottom: 10px">
+                <strong>Exemple de fichier CSV :</strong>
+              </p>
+              <div class="csv-example">
+                nom,prenom,email,telephone,adresse,departement
+                Dupont,Jean,jean.dupont@ville.fr,0123456789,123 Rue de la
+                Mairie,Voirie et Infrastructure
+                Martin,Marie,marie.martin@ville.fr,0987654321,456 Avenue des
+                Fleurs,Propreté Urbaine
+              </div>
 
-                    <p style="margin-top: 20px; margin-bottom: 10px;"><strong>Exemple de fichier CSV :</strong></p>
-                    <div class="csv-example">nom,prenom,email,telephone,adresse
-                        Dupont,Jean,jean.dupont@ville.fr,0123456789,123 Rue de la Mairie
-                        Martin,Marie,marie.martin@ville.fr,0987654321,456 Avenue des Fleurs</div>
+              <p style="margin-top: 15px; color: #dc3545; font-size: 13px">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Important :</strong> La colonne 'departement' est
+                maintenant obligatoire. Le nom du département doit correspondre
+                exactement à un département existant dans le système.
+              </p>
 
-                    <a href="/exemple-agents.csv" download class="download-link">
-                        <i class="fas fa-download"></i>
-                        Télécharger un fichier d'exemple
-                    </a>
-                </div>
-
-                <form th:action="@{/user/admin/import-agents}" method="post" enctype="multipart/form-data" id="uploadForm">
-                    <div class="upload-section">
-                        <div class="upload-icon">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                        </div>
-                        <h4>Glissez-déposez votre fichier CSV ici</h4>
-                        <p>ou cliquez pour parcourir vos fichiers</p>
-                        <div class="file-input-wrapper">
-                            <input type="file" id="file" name="file" accept=".csv" required onchange="showFileName()">
-                            <label for="file" class="file-input-label">
-                                <i class="fas fa-folder-open me-2"></i>
-                                Choisir un fichier
-                            </label>
-                        </div>
-                        <div class="file-selected" id="fileSelected">
-                            <i class="fas fa-check-circle me-2"></i>
-                            <span id="fileName"></span>
-                        </div>
-                    </div>
-
-                    <div class="warning-box">
-                        <strong>
-                            <i class="fas fa-exclamation-triangle"></i>
-                            Points importants à noter
-                        </strong>
-                        <ul>
-                            <li>
-                                <i class="fas fa-circle"></i>
-                                Un mot de passe sécurisé sera généré automatiquement pour chaque agent
-                            </li>
-                            <li>
-                                <i class="fas fa-circle"></i>
-                                Les identifiants (email et mot de passe) seront envoyés par email à chaque agent
-                            </li>
-                            <li>
-                                <i class="fas fa-circle"></i>
-                                Les agents dont l'email existe déjà dans le système seront ignorés
-                            </li>
-                            <li>
-                                <i class="fas fa-circle"></i>
-                                Assurez-vous que le fichier utilise l'encodage UTF-8 pour éviter les problèmes d'accents
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="form-actions">
-                        <a href="/dashboard" class="btn-cancel">
-                            <i class="fas fa-times me-2"></i>Annuler
-                        </a>
-                        <button type="submit" class="btn-submit">
-                            <i class="fas fa-file-import me-2"></i>Importer les agents
-                        </button>
-                    </div>
-                </form>
+              <a href="/exemple-agents.csv" download class="download-link">
+                <i class="fas fa-download"></i>
+                Télécharger un fichier d'exemple
+              </a>
             </div>
+
+            <form
+              th:action="@{/user/admin/import-agents}"
+              method="post"
+              enctype="multipart/form-data"
+              id="uploadForm"
+            >
+              <div class="upload-section">
+                <div class="upload-icon">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h4>Glissez-déposez votre fichier CSV ici</h4>
+                <p>ou cliquez pour parcourir vos fichiers</p>
+                <div class="file-input-wrapper">
+                  <input
+                    type="file"
+                    id="file"
+                    name="file"
+                    accept=".csv"
+                    required
+                    onchange="showFileName()"
+                  />
+                  <label for="file" class="file-input-label">
+                    <i class="fas fa-folder-open me-2"></i>
+                    Choisir un fichier
+                  </label>
+                </div>
+                <div class="file-selected" id="fileSelected">
+                  <i class="fas fa-check-circle me-2"></i>
+                  <span id="fileName"></span>
+                </div>
+              </div>
+
+              <div class="warning-box">
+                <strong>
+                  <i class="fas fa-exclamation-triangle"></i>
+                  Points importants à noter
+                </strong>
+                <ul>
+                  <li>
+                    <i class="fas fa-circle"></i>
+                    Un mot de passe sécurisé sera généré automatiquement pour
+                    chaque agent
+                  </li>
+                  <li>
+                    <i class="fas fa-circle"></i>
+                    Les identifiants (email et mot de passe) seront envoyés par
+                    email à chaque agent
+                  </li>
+                  <li>
+                    <i class="fas fa-circle"></i>
+                    Les agents dont l'email existe déjà dans le système seront
+                    ignorés
+                  </li>
+                  <li>
+                    <i class="fas fa-circle"></i>
+                    Assurez-vous que le fichier utilise l'encodage UTF-8 pour
+                    éviter les problèmes d'accents
+                  </li>
+                </ul>
+              </div>
+
+              <div class="form-actions">
+                <a href="/dashboard" class="btn-cancel">
+                  <i class="fas fa-times me-2"></i>Annuler
+                </a>
+                <button type="submit" class="btn-submit">
+                  <i class="fas fa-file-import me-2"></i>Importer les agents
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    function showFileName() {
-        const fileInput = document.getElementById('file');
-        const fileSelected = document.getElementById('fileSelected');
-        const fileName = document.getElementById('fileName');
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function showFileName() {
+        const fileInput = document.getElementById("file");
+        const fileSelected = document.getElementById("fileSelected");
+        const fileName = document.getElementById("fileName");
 
         if (fileInput.files.length > 0) {
-            fileName.textContent = fileInput.files[0].name;
-            fileSelected.style.display = 'block';
+          fileName.textContent = fileInput.files[0].name;
+          fileSelected.style.display = "block";
         } else {
-            fileSelected.style.display = 'none';
+          fileSelected.style.display = "none";
         }
-    }
-</script>
-</body>
+      }
+    </script>
+  </body>
 </html>
