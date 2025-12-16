@@ -1,6 +1,7 @@
 package com.citesignal.controller;
 
 import com.citesignal.model.Incident;
+import com.citesignal.model.StatutIncident;
 import com.citesignal.security.UserPrincipal;
 import com.citesignal.service.IncidentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +42,9 @@ public class AgentController {
             
             // Filtrer selon le statut si fourni
             if (status != null && !status.isEmpty()) {
-                Incident.Statut statut = null;
+                StatutIncident statut = null;
                 try {
-                    statut = Incident.Statut.valueOf(status.toUpperCase());
+                    statut = StatutIncident.valueOf(status.toUpperCase());
                 } catch (IllegalArgumentException e) {
                     // Statut invalide, ignorer
                 }
@@ -58,7 +59,7 @@ public class AgentController {
             }
             
             model.addAttribute("incidents", incidents);
-            model.addAttribute("statuts", Incident.Statut.values());
+            model.addAttribute("statuts", StatutIncident.values());
             model.addAttribute("currentStatus", status);
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Erreur lors du chargement des incidents: " + e.getMessage());

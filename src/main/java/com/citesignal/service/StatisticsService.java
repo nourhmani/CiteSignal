@@ -1,6 +1,8 @@
 package com.citesignal.service;
 
+import com.citesignal.model.CategorieIncident;
 import com.citesignal.model.Incident;
+import com.citesignal.model.StatutIncident;
 import com.citesignal.repository.IncidentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,7 @@ public class StatisticsService {
         
         // Incidents par statut
         Map<String, Long> incidentsByStatus = new HashMap<>();
-        for (Incident.Statut statut : Incident.Statut.values()) {
+        for (StatutIncident statut : StatutIncident.values()) {
             Long count = incidentRepository.countByStatut(statut);
             incidentsByStatus.put(statut.name(), count != null ? count : 0L);
         }
@@ -33,7 +35,7 @@ public class StatisticsService {
         
         // Incidents par catégorie
         Map<String, Long> incidentsByCategory = new HashMap<>();
-        for (Incident.Categorie categorie : Incident.Categorie.values()) {
+        for (CategorieIncident categorie : CategorieIncident.values()) {
             Long count = incidentRepository.countByCategorie(categorie);
             incidentsByCategory.put(categorie.name(), count != null ? count : 0L);
         }
@@ -58,8 +60,8 @@ public class StatisticsService {
         
         // Incidents résolus dans les 30 derniers jours
         long resolvedLast30Days = recentIncidents.stream()
-                .filter(i -> i.getStatut() == Incident.Statut.RESOLU || 
-                            i.getStatut() == Incident.Statut.CLOTURE)
+                .filter(i -> i.getStatut() == StatutIncident.RESOLU || 
+                            i.getStatut() == StatutIncident.CLOTURE)
                 .count();
         stats.put("resolvedLast30Days", resolvedLast30Days);
         

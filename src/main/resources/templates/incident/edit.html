@@ -1,129 +1,271 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Modifier l'incident - CiteSignal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
     <div class="container py-4">
-        <h2 class="mb-4"><i class="fas fa-edit"></i> Modifier l'incident</h2>
-        
-        <form th:action="@{/incidents/{id}/edit(id=${incident.id})}" 
-              th:object="${updateRequest}" 
-              method="post" 
-              enctype="multipart/form-data">
-            
-            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
-            
-            <div class="card mb-3">
-                <div class="card-header">Informations de base</div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Titre</label>
-                        <input type="text" class="form-control" th:field="*{titre}" 
-                               th:value="${incident.titre}">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control" th:field="*{description}" rows="5"
-                                  th:text="${incident.description}"></textarea>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Catégorie</label>
-                            <select class="form-select" th:field="*{categorie}">
-                                <option th:each="cat : ${categories}" 
-                                        th:value="${cat}" 
-                                        th:selected="${cat == incident.categorie}"
-                                        th:text="${cat}"></option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Statut</label>
-                            <select class="form-select" th:field="*{statut}">
-                                <option th:each="stat : ${statuts}" 
-                                        th:value="${stat}" 
-                                        th:selected="${stat == incident.statut}"
-                                        th:text="${stat}"></option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Priorité</label>
-                            <select class="form-select" th:field="*{priorite}">
-                                <option th:each="prio : ${priorites}" 
-                                        th:value="${prio}" 
-                                        th:selected="${prio == incident.priorite}"
-                                        th:text="${prio}"></option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mb-3">
-                <div class="card-header">Assignation</div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Agent</label>
-                            <select class="form-select" th:field="*{agentId}">
-                                <option value="">Aucun agent</option>
-                                <option th:each="agent : ${agents}" 
-                                        th:value="${agent.id}" 
-                                        th:selected="${agent.id == incident.agent?.id}"
-                                        th:text="${agent.prenom + ' ' + agent.nom}"></option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Département</label>
-                            <select class="form-select" th:field="*{departementId}">
-                                <option value="">Aucun département</option>
-                                <option th:each="dept : ${departements}" 
-                                        th:value="${dept.id}" 
-                                        th:selected="${dept.id == incident.departement?.id}"
-                                        th:text="${dept.nom}"></option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mb-3">
-                <div class="card-header">Résolution</div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Commentaire de résolution</label>
-                        <textarea class="form-control" th:field="*{commentaireResolution}" rows="3"
-                                  th:placeholder="'Commentaire de résolution (si résolu)'"></textarea>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mb-3">
-                <div class="card-header">Photos supplémentaires</div>
-                <div class="card-body">
-                    <input type="file" class="form-control" name="photos" multiple accept="image/*">
-                    <small class="text-muted">Ajouter de nouvelles photos</small>
-                </div>
-            </div>
-            
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a th:href="@{/incidents/{id}(id=${incident.id})}" class="btn btn-secondary">Annuler</a>
-                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-            </div>
-        </form>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+      <h2 class="mb-4"><i class="fas fa-edit"></i> Modifier l'incident</h2>
 
+      <form
+        th:action="@{/incidents/{id}/edit(id=${incident.id})}"
+        th:object="${updateRequest}"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <div
+          th:if="${errorMessage}"
+          class="alert alert-danger"
+          th:text="${errorMessage}"
+        ></div>
+
+        <div class="card mb-3">
+          <div class="card-header">Informations de base</div>
+          <div class="card-body">
+            <div
+              class="mb-3"
+              sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
+            >
+              <label class="form-label">Titre</label>
+              <input
+                type="text"
+                class="form-control"
+                th:field="*{titre}"
+                th:value="${incident.titre}"
+              />
+            </div>
+
+            <div
+              class="mb-3"
+              sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
+            >
+              <label class="form-label">Description</label>
+              <textarea
+                class="form-control"
+                th:field="*{description}"
+                rows="5"
+                th:text="${incident.description}"
+              ></textarea>
+            </div>
+
+            <div class="row">
+              <div
+                class="col-md-4 mb-3"
+                sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
+              >
+                <label class="form-label">Catégorie</label>
+                <select class="form-select" th:field="*{categorie}">
+                  <option
+                    th:each="cat : ${categories}"
+                    th:value="${cat}"
+                    th:selected="${cat == incident.categorie}"
+                    th:text="${cat}"
+                  ></option>
+                </select>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Statut</label>
+                <select class="form-select" th:field="*{statut}">
+                  <option
+                    th:each="stat : ${statuts}"
+                    th:value="${stat}"
+                    th:selected="${stat == incident.statut}"
+                    th:text="${stat}"
+                  ></option>
+                </select>
+              </div>
+
+              <div
+                class="col-md-4 mb-3"
+                sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
+              >
+                <label class="form-label">Priorité</label>
+                <select class="form-select" th:field="*{priorite}">
+                  <option
+                    th:each="prio : ${priorites}"
+                    th:value="${prio}"
+                    th:selected="${prio == incident.priorite}"
+                    th:text="${prio}"
+                  ></option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="card mb-3"
+          sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
+        >
+          <div class="card-header">Assignation</div>
+          <div class="card-body">
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              <strong>Ordre d'assignation :</strong> Sélectionnez d'abord un
+              département, puis choisissez un agent de ce département.
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label"
+                  >Département <span class="text-danger">*</span></label
+                >
+                <select
+                  class="form-select"
+                  th:field="*{departementId}"
+                  id="departementSelect"
+                  required
+                >
+                  <option value="">Sélectionnez un département</option>
+                  <option
+                    th:each="dept : ${departements}"
+                    th:value="${dept.id}"
+                    th:selected="${dept.id == incident.departement?.id}"
+                    th:text="${dept.nom}"
+                  ></option>
+                </select>
+                <div class="form-text">
+                  Le département doit être défini avant d'assigner un agent.
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Agent</label>
+                <select
+                  class="form-select"
+                  th:field="*{agentId}"
+                  id="agentSelect"
+                >
+                  <option value="">Sélectionnez d'abord un département</option>
+                  <option
+                    th:each="agent : ${allAgents}"
+                    th:value="${agent.id}"
+                    th:selected="${agent.id == incident.agent?.id}"
+                    th:text="${agent.prenom + ' ' + agent.nom + ' (' + agent.departement?.nom + ')'}"
+                    th:data-departement="${agent.departement?.id}"
+                  ></option>
+                </select>
+                <div class="form-text">
+                  Seuls les agents du département sélectionné sont disponibles.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="card mb-3"
+          sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
+        >
+          <div class="card-header">Résolution</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label">Commentaire de résolution</label>
+              <textarea
+                class="form-control"
+                th:field="*{commentaireResolution}"
+                rows="3"
+                th:placeholder="'Commentaire de résolution (si résolu)'"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header">Photos supplémentaires</div>
+          <div class="card-body">
+            <input
+              type="file"
+              class="form-control"
+              name="photos"
+              multiple
+              accept="image/*"
+            />
+            <small class="text-muted">Ajouter de nouvelles photos</small>
+          </div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+          <a
+            th:href="@{/incidents/{id}(id=${incident.id})}"
+            class="btn btn-secondary"
+            >Annuler</a
+          >
+          <button type="submit" class="btn btn-primary">
+            Enregistrer les modifications
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const departementSelect = document.getElementById("departementSelect");
+        const agentSelect = document.getElementById("agentSelect");
+
+        // Stocker toutes les options d'agents au chargement
+        const allAgentOptions = Array.from(
+          agentSelect.querySelectorAll("option")
+        );
+
+        function filterAgents() {
+          const selectedDepartementId = departementSelect.value;
+          const currentAgentValue = agentSelect.value; // Sauvegarder la valeur actuelle
+
+          // Réinitialiser la sélection de l'agent si le département change
+          if (selectedDepartementId === "") {
+            agentSelect.innerHTML =
+              '<option value="">Sélectionnez d\'abord un département</option>';
+            agentSelect.disabled = true;
+          } else {
+            agentSelect.innerHTML =
+              '<option value="">Sélectionnez un agent</option>';
+            agentSelect.disabled = false;
+
+            // Filtrer les agents par département
+            allAgentOptions.forEach((option) => {
+              const agentDepartementId =
+                option.getAttribute("data-departement");
+              if (
+                option.value !== "" &&
+                agentDepartementId === selectedDepartementId
+              ) {
+                const newOption = option.cloneNode(true);
+                agentSelect.appendChild(newOption);
+              }
+            });
+
+            // Restaurer la sélection si l'agent est toujours disponible
+            if (
+              currentAgentValue &&
+              agentSelect.querySelector(`option[value="${currentAgentValue}"]`)
+            ) {
+              agentSelect.value = currentAgentValue;
+            }
+          }
+        }
+
+        // Écouter les changements sur le select département
+        departementSelect.addEventListener("change", filterAgents);
+
+        // Initialiser le filtrage au chargement de la page
+        filterAgents();
+      });
+    </script>
+  </body>
+</html>

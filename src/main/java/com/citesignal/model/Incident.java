@@ -37,15 +37,15 @@ public class Incident {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "categorie", nullable = false, length = 50)
-    private Categorie categorie;
+    private CategorieIncident categorie;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "statut", nullable = false, length = 50)
-    private Statut statut = Statut.SIGNALE;
+    private StatutIncident statut = StatutIncident.SIGNALE;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "priorite", length = 20)
-    private Priorite priorite = Priorite.MOYENNE;
+    private PrioriteIncident priorite = PrioriteIncident.MOYENNE;
     
     @NotBlank
     @Size(max = 255)
@@ -100,30 +100,5 @@ public class Incident {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    
-    public enum Categorie {
-        INFRASTRUCTURE,
-        PROPRETE,
-        SECURITE,
-        SIGNALISATION,
-        ECLAIRAGE,
-        EAU_ASSANISSEMENT,
-        AUTRE
-    }
-    
-    public enum Statut {
-        SIGNALE,
-        PRIS_EN_CHARGE,
-        EN_RESOLUTION,
-        RESOLU,
-        CLOTURE
-    }
-    
-    public enum Priorite {
-        BASSE,
-        MOYENNE,
-        HAUTE,
-        URGENTE
-    }
 }
 

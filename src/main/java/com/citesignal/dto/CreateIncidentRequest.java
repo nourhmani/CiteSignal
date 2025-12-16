@@ -1,6 +1,8 @@
 package com.citesignal.dto;
 
 import com.citesignal.model.Incident;
+import com.citesignal.model.CategorieIncident;
+import com.citesignal.model.PrioriteIncident;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,7 +23,7 @@ public class CreateIncidentRequest {
     private String description;
     
     @NotNull(message = "La catégorie est obligatoire")
-    private Incident.Categorie categorie;
+    private CategorieIncident categorie;
     
     @NotBlank(message = "L'adresse est obligatoire")
     @Size(max = 255, message = "L'adresse ne doit pas dépasser 255 caractères")
@@ -35,6 +37,6 @@ public class CreateIncidentRequest {
     
     private List<MultipartFile> photos;
     
-    private Incident.Priorite priorite = Incident.Priorite.MOYENNE;
+    private PrioriteIncident priorite = PrioriteIncident.MOYENNE;
 }
 

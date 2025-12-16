@@ -1,14 +1,16 @@
 package com.citesignal.dto;
 
 import com.citesignal.model.Incident;
+import com.citesignal.model.StatutIncident;
+import com.citesignal.model.CategorieIncident;
 import lombok.Data;
 
 import java.time.LocalDate;
 
 @Data
 public class IncidentSearchRequest {
-    private Incident.Statut statut;
-    private Incident.Categorie categorie;
+    private StatutIncident statut;
+    private CategorieIncident categorie;
     private Long quartierId;
     private Long departementId;
     private LocalDate dateDebut;

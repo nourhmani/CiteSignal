@@ -63,7 +63,7 @@ public class IncidentService {
         incident.setLatitude(request.getLatitude());
         incident.setLongitude(request.getLongitude());
         incident.setPriorite(request.getPriorite());
-        incident.setStatut(Incident.Statut.SIGNALE);
+        incident.setStatut(StatutIncident.SIGNALE);
         incident.setCitoyen(citoyen);
         
         // Associer le quartier si fourni
@@ -119,64 +119,78 @@ public class IncidentService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
         
+        // Sauvegarder l'ancien statut pour les notifications
+        StatutIncident oldStatut = incident.getStatut();
+        
         // Vérifier les permissions
-        if (user.hasRole(User.RoleName.AGENT_MUNICIPAL) && 
+        if (user.hasRole(RoleName.AGENT_MUNICIPAL) && 
             incident.getAgent() != null && 
             !incident.getAgent().getId().equals(userId)) {
             throw new RuntimeException("Vous n'êtes pas autorisé à modifier cet incident");
         }
         
-        // Mettre à jour les champs
-        if (request.getTitre() != null) {
-            incident.setTitre(request.getTitre());
-        }
-        if (request.getDescription() != null) {
-            incident.setDescription(request.getDescription());
-        }
-        if (request.getCategorie() != null) {
-            incident.setCategorie(request.getCategorie());
-        }
-        if (request.getPriorite() != null) {
-            incident.setPriorite(request.getPriorite());
-        }
-        if (request.getAdresse() != null) {
-            incident.setAdresse(request.getAdresse());
-        }
-        if (request.getLatitude() != null) {
-            incident.setLatitude(request.getLatitude());
-        }
-        if (request.getLongitude() != null) {
-            incident.setLongitude(request.getLongitude());
-        }
-        if (request.getQuartierId() != null) {
-            Quartier quartier = quartierRepository.findById(request.getQuartierId())
-                    .orElse(null);
-            incident.setQuartier(quartier);
-        }
+        // Mettre à jour les champs - restrictions selon le rôle
+        boolean isAgent = user.hasRole(RoleName.AGENT_MUNICIPAL);
+        boolean isAdmin = user.hasRole(RoleName.ADMINISTRATEUR) || user.hasRole(RoleName.SUPERADMIN);
         
-        // Gérer le workflow des statuts
-        Incident.Statut oldStatut = incident.getStatut();
-        if (request.getStatut() != null && request.getStatut() != oldStatut) {
-            updateIncidentStatus(incident, request.getStatut(), request.getCommentaireResolution());
-        }
-        
-        // Assigner un agent
-        if (request.getAgentId() != null) {
-            User agent = userRepository.findById(request.getAgentId())
-                    .orElseThrow(() -> new RuntimeException("Agent introuvable"));
-            incident.setAgent(agent);
+        // Seuls les admins peuvent modifier ces champs
+        if (!isAgent) {
+            if (request.getTitre() != null) {
+                incident.setTitre(request.getTitre());
+            }
+            if (request.getDescription() != null) {
+                incident.setDescription(request.getDescription());
+            }
+            if (request.getCategorie() != null) {
+                incident.setCategorie(request.getCategorie());
+            }
+            if (request.getPriorite() != null) {
+                incident.setPriorite(request.getPriorite());
+            }
+            if (request.getAdresse() != null) {
+                incident.setAdresse(request.getAdresse());
+            }
+            if (request.getLatitude() != null) {
+                incident.setLatitude(request.getLatitude());
+            }
+            if (request.getLongitude() != null) {
+                incident.setLongitude(request.getLongitude());
+            }
+            if (request.getQuartierId() != null) {
+                Quartier quartier = quartierRepository.findById(request.getQuartierId())
+                        .orElse(null);
+                incident.setQuartier(quartier);
+            }
             
-            // Assigner le département de l'agent
-            if (agent.getDepartement() != null) {
-                incident.setDepartement(agent.getDepartement());
+            // Assigner un département
+            if (request.getDepartementId() != null) {
+                Departement departement = departementRepository.findById(request.getDepartementId())
+                        .orElseThrow(() -> new RuntimeException("Département introuvable"));
+                incident.setDepartement(departement);
+            }
+            
+            // Assigner un agent
+            User oldAgent = incident.getAgent();
+            if (request.getAgentId() != null) {
+                User agent = userRepository.findById(request.getAgentId())
+                        .orElseThrow(() -> new RuntimeException("Agent introuvable"));
+                incident.setAgent(agent);
+                
+                // Si un agent est assigné pour la première fois ou si l'agent change, passer le statut à PRIS_EN_CHARGE
+                if (oldAgent == null || !oldAgent.getId().equals(agent.getId())) {
+                    if (incident.getStatut() == StatutIncident.SIGNALE) {
+                        updateIncidentStatus(incident, StatutIncident.PRIS_EN_CHARGE, null);
+                    }
+                    
+                    // Notifier l'agent de l'assignation
+                    notifyAgentOfAssignment(incident, agent);
+                }
             }
         }
         
-        // Assigner un département
-        if (request.getDepartementId() != null) {
-            Departement departement = departementRepository.findById(request.getDepartementId())
-                    .orElse(null);
-            incident.setDepartement(departement);
+        // Gérer le workflow des statuts (accessible à tous les rôles)
+        if (request.getStatut() != null && request.getStatut() != oldStatut) {
+            updateIncidentStatus(incident, request.getStatut(), request.getCommentaireResolution());
         }
         
         // Ajouter de nouvelles photos
@@ -213,8 +227,8 @@ public class IncidentService {
     }
     
     @Transactional
-    public void updateIncidentStatus(Incident incident, Incident.Statut newStatut, String commentaire) {
-        Incident.Statut oldStatut = incident.getStatut();
+    public void updateIncidentStatus(Incident incident, StatutIncident newStatut, String commentaire) {
+        StatutIncident oldStatut = incident.getStatut();
         
         // Validation des transitions de statut
         if (!isValidStatusTransition(oldStatut, newStatut)) {
@@ -241,16 +255,16 @@ public class IncidentService {
         }
     }
     
-    private boolean isValidStatusTransition(Incident.Statut oldStatut, Incident.Statut newStatut) {
+    private boolean isValidStatusTransition(StatutIncident oldStatut, StatutIncident newStatut) {
         // Définir les transitions valides
         return switch (oldStatut) {
-            case SIGNALE -> newStatut == Incident.Statut.PRIS_EN_CHARGE;
-            case PRIS_EN_CHARGE -> newStatut == Incident.Statut.EN_RESOLUTION || 
-                                   newStatut == Incident.Statut.SIGNALE;
-            case EN_RESOLUTION -> newStatut == Incident.Statut.RESOLU || 
-                                  newStatut == Incident.Statut.PRIS_EN_CHARGE;
-            case RESOLU -> newStatut == Incident.Statut.CLOTURE || 
-                           newStatut == Incident.Statut.EN_RESOLUTION;
+            case SIGNALE -> newStatut == StatutIncident.PRIS_EN_CHARGE;
+            case PRIS_EN_CHARGE -> newStatut == StatutIncident.EN_RESOLUTION || 
+                                   newStatut == StatutIncident.SIGNALE;
+            case EN_RESOLUTION -> newStatut == StatutIncident.RESOLU || 
+                                  newStatut == StatutIncident.PRIS_EN_CHARGE;
+            case RESOLU -> newStatut == StatutIncident.CLOTURE || 
+                           newStatut == StatutIncident.EN_RESOLUTION;
             case CLOTURE -> false; // Une fois clôturé, on ne peut plus changer
         };
     }
@@ -260,11 +274,11 @@ public class IncidentService {
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow(() -> new RuntimeException("Incident introuvable"));
         
-        if (incident.getStatut() != Incident.Statut.RESOLU) {
+        if (incident.getStatut() != StatutIncident.RESOLU) {
             throw new RuntimeException("Seuls les incidents résolus peuvent être clôturés");
         }
         
-        incident.setStatut(Incident.Statut.CLOTURE);
+        incident.setStatut(StatutIncident.CLOTURE);
         incident.setFeedbackCitoyen(feedbackCitoyen);
         incident.setNoteSatisfaction(noteSatisfaction);
         
@@ -299,6 +313,9 @@ public class IncidentService {
         if (incident.getQuartier() != null) {
             incident.getQuartier().getNom(); // Force le chargement
         }
+        if (incident.getDepartement() != null) {
+            incident.getDepartement().getNom(); // Force le chargement
+        }
         // Forcer le chargement de la collection photos
         if (incident.getPhotos() != null) {
             int photoCount = incident.getPhotos().size(); // Force le chargement de la collection
@@ -326,8 +343,8 @@ public class IncidentService {
     }
     
     public Page<Incident> searchIncidents(
-            Incident.Statut statut,
-            Incident.Categorie categorie,
+            StatutIncident statut,
+            CategorieIncident categorie,
             Long quartierId,
             Long departementId,
             LocalDateTime dateDebut,
@@ -341,7 +358,7 @@ public class IncidentService {
         );
     }
     
-    private void notifyCitizenOfStatusChange(Incident incident, Incident.Statut oldStatut) {
+    private void notifyCitizenOfStatusChange(Incident incident, StatutIncident oldStatut) {
         String message = getStatusChangeMessage(incident.getStatut(), incident.getTitre());
         
         // Notification en base
@@ -365,7 +382,7 @@ public class IncidentService {
         }
     }
     
-    private String getStatusChangeMessage(Incident.Statut statut, String titre) {
+    private String getStatusChangeMessage(StatutIncident statut, String titre) {
         return switch (statut) {
             case PRIS_EN_CHARGE -> "Votre signalement '" + titre + "' a été pris en charge par un agent municipal.";
             case EN_RESOLUTION -> "L'intervention pour votre signalement '" + titre + "' est en cours.";
@@ -373,6 +390,32 @@ public class IncidentService {
             case CLOTURE -> "Votre signalement '" + titre + "' a été clôturé.";
             default -> "Votre signalement '" + titre + "' a été mis à jour.";
         };
+    }
+    
+    private void notifyAgentOfAssignment(Incident incident, User agent) {
+        String message = "Vous avez été assigné au signalement '" + incident.getTitre() + 
+                        "' situé à " + incident.getAdresse() + ".";
+        
+        // Notification en base
+        createNotification(
+                agent,
+                incident,
+                "Nouvelle assignation d'incident",
+                message,
+                Notification.TypeNotification.INCIDENT_ASSIGNE
+        );
+        
+        // Email
+        try {
+            emailService.sendAgentAssignmentEmail(
+                    agent.getEmail(),
+                    incident.getTitre(),
+                    incident.getAdresse(),
+                    incident.getDescription()
+            );
+        } catch (Exception e) {
+            logger.error("Erreur lors de l'envoi de l'email d'assignation à l'agent", e);
+        }
     }
     
     private void createNotification(User user, Incident incident, String titre, String message, 

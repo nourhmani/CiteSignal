@@ -401,6 +401,26 @@
             }
         }
     </style>
+    <script th:inline="javascript">
+        console.log("=== DEBUG SESSION ===");
+        console.log("Session ID: " + [[${session?.id}]]);
+        console.log("CSRF Token: " + [[${_csrf?.token}]]);
+        console.log("CSRF Param: " + [[${_csrf?.parameterName}]]);
+
+        // Vérifiez avant chaque soumission de formulaire
+        document.addEventListener('submit', function(e) {
+            console.log("Form submitted to: " + e.target.action);
+            let csrfInput = e.target.querySelector('input[name="_csrf"]');
+            if (!csrfInput) {
+                console.error("❌ CSRF token missing!");
+                e.preventDefault();
+                alert("Erreur de sécurité. Veuillez recharger la page.");
+                window.location.reload();
+            } else {
+                console.log("✅ CSRF token present: " + csrfInput.value.substring(0, 10) + "...");
+            }
+        });
+    </script>
 </head>
 <body>
 <!-- Navigation supérieure -->
@@ -448,9 +468,9 @@
                 <span th:text="${errorMessage}"></span>
             </div>
 
-            <!-- Formulaire (structure identique à l'ancienne version) -->
+            <!-- Formulaire  -->
             <form th:action="@{/incidents/create}" th:object="${incident}" method="post" enctype="multipart/form-data">
-
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <!-- Section: Informations de base -->
                 <h3 class="form-section-title">
                     <i class="fas fa-info-circle"></i>

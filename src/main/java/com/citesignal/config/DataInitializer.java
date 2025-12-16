@@ -2,6 +2,7 @@ package com.citesignal.config;
 
 import com.citesignal.model.Departement;
 import com.citesignal.model.Quartier;
+import com.citesignal.model.RoleName;
 import com.citesignal.model.User;
 import com.citesignal.repository.DepartementRepository;
 import com.citesignal.repository.QuartierRepository;
@@ -126,7 +127,7 @@ public class DataInitializer implements CommandLineRunner {
             superAdmin.setNom("Admin");
             superAdmin.setPrenom("Super");
             superAdmin.setEmail("superadmin@citesignal.com");
-            superAdmin.setRole(User.RoleName.SUPERADMIN);
+            superAdmin.setRole(RoleName.SUPERADMIN);
             superAdmin.setActive(true);
             superAdmin.setEmailVerified(true);
             

@@ -1,6 +1,9 @@
 package com.citesignal.dto;
 
+import com.citesignal.model.CategorieIncident;
 import com.citesignal.model.Incident;
+import com.citesignal.model.PrioriteIncident;
+import com.citesignal.model.StatutIncident;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,11 +19,11 @@ public class UpdateIncidentRequest {
     @Size(max = 2000, message = "La description ne doit pas dépasser 2000 caractères")
     private String description;
     
-    private Incident.Categorie categorie;
+    private CategorieIncident categorie;
     
-    private Incident.Statut statut;
+    private StatutIncident statut;
     
-    private Incident.Priorite priorite;
+    private PrioriteIncident priorite;
     
     @Size(max = 255, message = "L'adresse ne doit pas dépasser 255 caractères")
     private String adresse;

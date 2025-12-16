@@ -63,21 +63,5 @@ public class Rapport {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    
-    public enum TypeRapport {
-        STATISTIQUES_GENERALES,
-        INCIDENTS_PAR_CATEGORIE,
-        INCIDENTS_PAR_QUARTIER,
-        PERFORMANCE_AGENTS,
-        DELAIS_RESOLUTION,
-        SATISFACTION_CITOYENS,
-        CUSTOM
-    }
-    
-    public enum FormatExport {
-        CSV,
-        PDF,
-        EXCEL
-    }
 }
 

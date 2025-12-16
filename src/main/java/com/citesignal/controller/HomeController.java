@@ -1,5 +1,7 @@
 package com.citesignal.controller;
 
+import com.citesignal.model.RoleName;
+import com.citesignal.model.StatutIncident;
 import com.citesignal.model.User;
 import com.citesignal.security.UserPrincipal;
 import com.citesignal.service.UserService;
@@ -78,9 +80,9 @@ public class HomeController {
                     // Statistiques utilisateurs pour superadmin
                     if (isSuperAdmin) {
                         long totalUsers = userService.getAllUsers().size();
-                        long adminCount = userService.getUsersByRole(User.RoleName.ADMINISTRATEUR).size();
-                        long agentCount = userService.getUsersByRole(User.RoleName.AGENT_MUNICIPAL).size();
-                        long citizenCount = userService.getUsersByRole(User.RoleName.CITOYEN).size();
+                        long adminCount = userService.getUsersByRole(RoleName.ADMINISTRATEUR).size();
+                        long agentCount = userService.getUsersByRole(RoleName.AGENT_MUNICIPAL).size();
+                        long citizenCount = userService.getUsersByRole(RoleName.CITOYEN).size();
 
                         model.addAttribute("totalUsers", totalUsers);
                         model.addAttribute("adminCount", adminCount);
@@ -106,15 +108,15 @@ public class HomeController {
 
                     // Calculer les statistiques pour l'agent
                     long pendingIncidents = agentIncidents.stream()
-                            .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.SIGNALE)
+                            .filter(i -> i.getStatut() == StatutIncident.SIGNALE)
                             .count();
                     long inProgressIncidents = agentIncidents.stream()
-                            .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.PRIS_EN_CHARGE ||
-                                        i.getStatut() == com.citesignal.model.Incident.Statut.EN_RESOLUTION)
+                            .filter(i -> i.getStatut() == StatutIncident.PRIS_EN_CHARGE ||
+                                        i.getStatut() == StatutIncident.EN_RESOLUTION)
                             .count();
                     long resolvedIncidents = agentIncidents.stream()
-                            .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.RESOLU ||
-                                        i.getStatut() == com.citesignal.model.Incident.Statut.CLOTURE)
+                            .filter(i -> i.getStatut() == StatutIncident.RESOLU ||
+                                        i.getStatut() == StatutIncident.CLOTURE)
                             .count();
                     long todayIncidents = agentIncidents.stream()
                             .filter(i -> i.getCreatedAt().toLocalDate().equals(java.time.LocalDate.now()))
@@ -143,15 +145,15 @@ public class HomeController {
                     // Calculer les statistiques
                     long totalIncidents = allMyIncidents.size();
                     long enAttente = allMyIncidents.stream()
-                            .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.SIGNALE)
+                            .filter(i -> i.getStatut() == StatutIncident.SIGNALE)
                             .count();
                     long enCours = allMyIncidents.stream()
-                            .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.PRIS_EN_CHARGE ||
-                                        i.getStatut() == com.citesignal.model.Incident.Statut.EN_RESOLUTION)
+                            .filter(i -> i.getStatut() == StatutIncident.PRIS_EN_CHARGE ||
+                                        i.getStatut() == StatutIncident.EN_RESOLUTION)
                             .count();
                     long resolus = allMyIncidents.stream()
-                            .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.RESOLU ||
-                                        i.getStatut() == com.citesignal.model.Incident.Statut.CLOTURE)
+                            .filter(i -> i.getStatut() == StatutIncident.RESOLU ||
+                                        i.getStatut() == StatutIncident.CLOTURE)
                             .count();
                     
                     model.addAttribute("totalIncidents", totalIncidents);
