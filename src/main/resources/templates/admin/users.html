@@ -526,6 +526,11 @@
                   method="post"
                   class="d-inline"
                 >
+                  <input
+                    type="hidden"
+                    th:name="${_csrf.parameterName}"
+                    th:value="${_csrf.token}"
+                  />
                   <button
                     type="submit"
                     class="btn-delete"

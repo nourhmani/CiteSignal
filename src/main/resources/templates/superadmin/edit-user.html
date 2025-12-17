@@ -321,6 +321,11 @@
           th:action="@{/user/superadmin/edit-user/{id}(id=${user.id})}"
           method="post"
         >
+          <input
+            type="hidden"
+            th:name="${_csrf.parameterName}"
+            th:value="${_csrf.token}"
+          />
           <!-- Informations Personnelles -->
           <div class="form-section">
             <h3 class="section-title">

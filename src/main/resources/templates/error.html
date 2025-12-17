@@ -200,7 +200,12 @@
       <h5><i class="fas fa-info-circle"></i> Détails de l'erreur</h5>
       <p th:text="${message}">Message d'erreur détaillé</p>
     </div>
-
+    <div th:if="${status == 403}" class="alert alert-warning mt-3">
+      <i class="fas fa-shield-alt"></i>
+      <strong>Problème de sécurité</strong><br>
+      Il est possible que votre session ait expiré ou que le formulaire soit obsolète.<br>
+      Veuillez recharger la page et réessayer.
+    </div>
 
   </div>
 
