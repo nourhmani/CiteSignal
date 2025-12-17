@@ -1,271 +1,955 @@
 <!DOCTYPE html>
-<html
-  xmlns:th="http://www.thymeleaf.org"
-  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
->
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Modifier l'incident - CiteSignal</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-  </head>
-  <body>
-    <div class="container py-4">
-      <h2 class="mb-4"><i class="fas fa-edit"></i> Modifier l'incident</h2>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modifier l'incident - CiteSignal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --primary-color: #6366f1;
+      --secondary-color: #8b5cf6;
+      --success-color: #10b981;
+      --danger-color: #ef4444;
+      --warning-color: #f59e0b;
+      --dark-color: #1e293b;
+      --light-bg: #f8fafc;
+    }
 
-      <form
-        th:action="@{/incidents/{id}/edit(id=${incident.id})}"
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--light-bg);
+      min-height: 100vh;
+    }
+
+    /* Top Navigation */
+    .top-navbar {
+      background: white;
+      padding: 20px 0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    .navbar-brand {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
+
+    .btn-back {
+      padding: 10px 20px;
+      background: var(--light-bg);
+      color: var(--dark-color);
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .btn-back:hover {
+      background: #e2e8f0;
+      color: var(--dark-color);
+      text-decoration: none;
+    }
+
+    /* Main Content */
+    .main-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Page Header */
+    .page-header {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    .breadcrumb {
+      background: none;
+      padding: 0;
+      margin-bottom: 15px;
+    }
+
+    .breadcrumb-item {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .breadcrumb-item.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .breadcrumb-item a {
+      color: #64748b;
+      text-decoration: none;
+    }
+
+    .breadcrumb-item a:hover {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--dark-color);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    .page-title i {
+      margin-right: 12px;
+      color: var(--primary-color);
+    }
+
+    .page-subtitle {
+      color: #64748b;
+      font-size: 15px;
+    }
+
+    /* Cards */
+    .form-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      margin-bottom: 25px;
+    }
+
+    .card-header {
+      padding: 20px 30px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-header h5 {
+      margin: 0;
+      font-weight: 700;
+      color: var(--dark-color);
+      display: flex;
+      align-items: center;
+    }
+
+    .card-header i {
+      margin-right: 10px;
+      color: var(--primary-color);
+    }
+
+    .card-body {
+      padding: 30px;
+    }
+
+    /* Form Styling */
+    .form-label {
+      color: var(--dark-color);
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-label i {
+      margin-right: 8px;
+      color: var(--primary-color);
+      font-size: 16px;
+    }
+
+    .form-control, .form-select {
+      padding: 14px 18px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background: #f8fafc;
+    }
+
+    .form-control:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    textarea.form-control {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .form-text {
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .text-danger {
+      color: var(--danger-color) !important;
+    }
+
+    /* Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .btn-submit {
+      padding: 14px 30px;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-cancel {
+      padding: 14px 30px;
+      background: #f1f5f9;
+      color: var(--dark-color);
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-cancel:hover {
+      background: #e2e8f0;
+      color: var(--dark-color);
+      text-decoration: none;
+      transform: translateY(-2px);
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: none;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .alert i {
+      font-size: 20px;
+    }
+
+    .alert-danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .alert-info {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    /* File Input */
+    .file-input-container {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-input-container input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-input-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      background: #f8fafc;
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      color: #64748b;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .file-input-label:hover {
+      border-color: var(--primary-color);
+      background: #f1f5f9;
+    }
+
+    .file-input-label i {
+      font-size: 24px;
+      color: var(--primary-color);
+    }
+
+    /* Required Field Indicator */
+    .required-field::after {
+      content: " *";
+      color: var(--danger-color);
+    }
+
+    /* Information Sections */
+    .info-section {
+      margin-bottom: 30px;
+    }
+
+    .info-section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--dark-color);
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 0 15px;
+      }
+
+      .page-header {
+        padding: 20px;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .btn-cancel, .btn-submit {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+
+    /* Status and Priority Badges Preview */
+    .badge-preview {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .status-signale { background: #f1f5f9; color: #64748b; }
+    .status-pris-en-charge { background: #dbeafe; color: #1d4ed8; }
+    .status-en-resolution { background: #fef3c7; color: #92400e; }
+    .status-resolu { background: #d1fae5; color: #065f46; }
+    .status-cloture { background: #e0e7ff; color: #3730a3; }
+
+    .priority-urgente { background: #fee2e2; color: #991b1b; }
+    .priority-haute { background: #fef3c7; color: #92400e; }
+    .priority-moyenne { background: #dbeafe; color: #1d4ed8; }
+    .priority-basse { background: #f1f5f9; color: #64748b; }
+
+    /* Map */
+    .map-container {
+      margin-top: 15px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #e2e8f0;
+      position: relative;
+    }
+
+    #map {
+      height: 400px;
+      width: 100%;
+    }
+
+    .map-instructions {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #64748b;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Photo Cards */
+    .photo-card {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .photo-card:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .photo-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .photo-info {
+      padding: 8px;
+      background: white;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<!-- Top Navigation -->
+<nav class="top-navbar">
+  <div class="main-container">
+    <div class="d-flex justify-content-between align-items-center">
+      <a class="navbar-brand" href="/dashboard">
+        <i class="fas fa-city me-2"></i>CiteSignal
+      </a>
+      <a th:href="@{/incidents/{id}(id=${incident.id})}" class="btn-back">
+        <i class="fas fa-arrow-left me-2"></i>
+        Retour aux détails
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="/dashboard">
+            <i class="fas fa-home me-1"></i>Accueil
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a th:href="@{/incidents}">Incidents</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a th:href="@{/incidents/{id}(id=${incident.id})}" th:text="${incident.titre}"></a>
+        </li>
+        <li class="breadcrumb-item active">Modifier</li>
+      </ol>
+    </nav>
+    <div>
+      <h1 class="page-title">
+        <i class="fas fa-edit"></i>
+        Modifier l'incident
+      </h1>
+      <p class="page-subtitle">Mettez à jour les informations de l'incident</p>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+    <i class="fas fa-exclamation-circle"></i>
+    <span th:text="${errorMessage}"></span>
+  </div>
+
+  <!-- Edit Form -->
+  <form th:action="@{/incidents/{id}/edit(id=${incident.id})}"
         th:object="${updateRequest}"
         method="post"
-        enctype="multipart/form-data"
-      >
-        <div
-          th:if="${errorMessage}"
-          class="alert alert-danger"
-          th:text="${errorMessage}"
-        ></div>
+        enctype="multipart/form-data">
 
-        <div class="card mb-3">
-          <div class="card-header">Informations de base</div>
-          <div class="card-body">
-            <div
-              class="mb-3"
-              sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
-            >
-              <label class="form-label">Titre</label>
-              <input
-                type="text"
-                class="form-control"
-                th:field="*{titre}"
-                th:value="${incident.titre}"
-              />
-            </div>
+    <!-- Basic Information Card -->
+    <div class="form-card">
+      <div class="card-header">
+        <h5><i class="fas fa-info-circle"></i> Informations de base</h5>
+        <small class="text-muted">Informations essentielles de l'incident</small>
+      </div>
+      <div class="card-body">
+        <!-- Titre -->
+        <div class="mb-4" sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')">
+          <label class="form-label">
+            <i class="fas fa-heading"></i>Titre
+          </label>
+          <input type="text"
+                 class="form-control"
+                 th:field="*{titre}"
+                 th:value="${incident.titre}"
+                 placeholder="Titre de l'incident"
+                 required>
+          <div class="form-text">Donnez un titre clair et descriptif à l'incident</div>
+        </div>
 
-            <div
-              class="mb-3"
-              sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
-            >
-              <label class="form-label">Description</label>
-              <textarea
-                class="form-control"
-                th:field="*{description}"
-                rows="5"
-                th:text="${incident.description}"
-              ></textarea>
-            </div>
+        <!-- Description -->
+        <div class="mb-4" sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')">
+          <label class="form-label">
+            <i class="fas fa-align-left"></i>Description
+          </label>
+          <textarea class="form-control"
+                    th:field="*{description}"
+                    rows="5"
+                    th:text="${incident.description}"
+                    placeholder="Décrivez en détail l'incident..."
+                    required></textarea>
+          <div class="form-text">Décrivez précisément la situation et les problèmes constatés</div>
+        </div>
 
-            <div class="row">
-              <div
-                class="col-md-4 mb-3"
-                sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
-              >
-                <label class="form-label">Catégorie</label>
-                <select class="form-select" th:field="*{categorie}">
-                  <option
-                    th:each="cat : ${categories}"
-                    th:value="${cat}"
-                    th:selected="${cat == incident.categorie}"
-                    th:text="${cat}"
-                  ></option>
-                </select>
-              </div>
+        <!-- Category, Status, Priority -->
+        <div class="row g-3">
+          <!-- Catégorie -->
+          <div class="col-md-4" sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')">
+            <label class="form-label">
+              <i class="fas fa-tag"></i>Catégorie
+            </label>
+            <select class="form-select" th:field="*{categorie}" required>
+              <option th:each="cat : ${categories}"
+                      th:value="${cat}"
+                      th:selected="${cat == incident.categorie}"
+                      th:text="${cat}"></option>
+            </select>
+            <div class="form-text">Type d'incident</div>
+          </div>
 
-              <div class="col-md-4 mb-3">
-                <label class="form-label">Statut</label>
-                <select class="form-select" th:field="*{statut}">
-                  <option
-                    th:each="stat : ${statuts}"
-                    th:value="${stat}"
-                    th:selected="${stat == incident.statut}"
-                    th:text="${stat}"
-                  ></option>
-                </select>
-              </div>
+          <!-- Statut -->
+          <div class="col-md-4">
+            <label class="form-label">
+              <i class="fas fa-clipboard-check"></i>Statut
+            </label>
+            <select class="form-select" th:field="*{statut}" required>
+              <!-- État actuel toujours affiché -->
+              <option th:value="${incident.statut}" th:text="${incident.statut}" selected></option>
+              
+              <!-- États suivants possibles selon l'état actuel -->
+              <option th:if="${incident.statut.name() == 'SIGNALE'}" value="PRIS_EN_CHARGE">Pris en charge</option>
+              <option th:if="${incident.statut.name() == 'PRIS_EN_CHARGE'}" value="EN_RESOLUTION">En résolution</option>
+              <option th:if="${incident.statut.name() == 'EN_RESOLUTION'}" value="RESOLU">Résolu</option>
+              <option th:if="${incident.statut.name() == 'RESOLU' and (#authorization.expression('hasRole(''ADMINISTRATEUR'') or hasRole(''SUPERADMIN'')'))}" value="CLOTURE">Clôturé</option>
+            </select>
+            <div class="form-text">État actuel de l'incident</div>
+          </div>
 
-              <div
-                class="col-md-4 mb-3"
-                sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
-              >
-                <label class="form-label">Priorité</label>
-                <select class="form-select" th:field="*{priorite}">
-                  <option
-                    th:each="prio : ${priorites}"
-                    th:value="${prio}"
-                    th:selected="${prio == incident.priorite}"
-                    th:text="${prio}"
-                  ></option>
-                </select>
-              </div>
-            </div>
+          <!-- Priorité -->
+          <div class="col-md-4" sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')">
+            <label class="form-label">
+              <i class="fas fa-exclamation"></i>Priorité
+            </label>
+            <select class="form-select" th:field="*{priorite}" required>
+              <option th:each="prio : ${priorites}"
+                      th:value="${prio}"
+                      th:selected="${prio == incident.priorite}"
+                      th:text="${prio}"></option>
+            </select>
+            <div class="form-text">Niveau d'urgence de l'incident</div>
           </div>
         </div>
-
-        <div
-          class="card mb-3"
-          sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
-        >
-          <div class="card-header">Assignation</div>
-          <div class="card-body">
-            <div class="alert alert-info">
-              <i class="fas fa-info-circle"></i>
-              <strong>Ordre d'assignation :</strong> Sélectionnez d'abord un
-              département, puis choisissez un agent de ce département.
-            </div>
-
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label"
-                  >Département <span class="text-danger">*</span></label
-                >
-                <select
-                  class="form-select"
-                  th:field="*{departementId}"
-                  id="departementSelect"
-                  required
-                >
-                  <option value="">Sélectionnez un département</option>
-                  <option
-                    th:each="dept : ${departements}"
-                    th:value="${dept.id}"
-                    th:selected="${dept.id == incident.departement?.id}"
-                    th:text="${dept.nom}"
-                  ></option>
-                </select>
-                <div class="form-text">
-                  Le département doit être défini avant d'assigner un agent.
-                </div>
-              </div>
-
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Agent</label>
-                <select
-                  class="form-select"
-                  th:field="*{agentId}"
-                  id="agentSelect"
-                >
-                  <option value="">Sélectionnez d'abord un département</option>
-                  <option
-                    th:each="agent : ${allAgents}"
-                    th:value="${agent.id}"
-                    th:selected="${agent.id == incident.agent?.id}"
-                    th:text="${agent.prenom + ' ' + agent.nom + ' (' + agent.departement?.nom + ')'}"
-                    th:data-departement="${agent.departement?.id}"
-                  ></option>
-                </select>
-                <div class="form-text">
-                  Seuls les agents du département sélectionné sont disponibles.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="card mb-3"
-          sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPER_ADMINISTRATEUR')"
-        >
-          <div class="card-header">Résolution</div>
-          <div class="card-body">
-            <div class="mb-3">
-              <label class="form-label">Commentaire de résolution</label>
-              <textarea
-                class="form-control"
-                th:field="*{commentaireResolution}"
-                rows="3"
-                th:placeholder="'Commentaire de résolution (si résolu)'"
-              ></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="card mb-3">
-          <div class="card-header">Photos supplémentaires</div>
-          <div class="card-body">
-            <input
-              type="file"
-              class="form-control"
-              name="photos"
-              multiple
-              accept="image/*"
-            />
-            <small class="text-muted">Ajouter de nouvelles photos</small>
-          </div>
-        </div>
-
-        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-          <a
-            th:href="@{/incidents/{id}(id=${incident.id})}"
-            class="btn btn-secondary"
-            >Annuler</a
-          >
-          <button type="submit" class="btn btn-primary">
-            Enregistrer les modifications
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const departementSelect = document.getElementById("departementSelect");
-        const agentSelect = document.getElementById("agentSelect");
+    <!-- Assignment Card -->
+    <div class="form-card" sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')">
+      <div class="card-header">
+        <h5><i class="fas fa-user-friends"></i> Assignation</h5>
+        <small class="text-muted">Assignez l'incident à un département et un agent</small>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i>
+          <strong>Ordre d'assignation :</strong> Sélectionnez d'abord un département, puis choisissez un agent de ce département.
+        </div>
 
-        // Stocker toutes les options d'agents au chargement
-        const allAgentOptions = Array.from(
-          agentSelect.querySelectorAll("option")
-        );
+        <div class="row g-3">
+          <!-- Département -->
+          <div class="col-md-6">
+            <label class="form-label required-field">
+              <i class="fas fa-building"></i>Département
+            </label>
+            <select class="form-select"
+                    th:field="*{departementId}"
+                    id="departementSelect"
+                    required>
+              <option value="">Sélectionnez un département</option>
+              <option th:each="dept : ${departements}"
+                      th:value="${dept.id}"
+                      th:selected="${dept.id == incident.departement?.id}"
+                      th:text="${dept.nom}"></option>
+            </select>
+            <div class="form-text">Le département responsable de la résolution</div>
+          </div>
 
-        function filterAgents() {
-          const selectedDepartementId = departementSelect.value;
-          const currentAgentValue = agentSelect.value; // Sauvegarder la valeur actuelle
+          <!-- Agent -->
+          <div class="col-md-6">
+            <label class="form-label">
+              <i class="fas fa-user-tie"></i>Agent
+            </label>
+            <select class="form-select"
+                    th:field="*{agentId}"
+                    id="agentSelect"
+                    disabled>
+              <option value="">Sélectionnez d'abord un département</option>
+              <option th:each="agent : ${allAgents}"
+                      th:value="${agent.id}"
+                      th:selected="${agent.id == incident.agent?.id}"
+                      th:text="${agent.prenom + ' ' + agent.nom + ' (' + agent.departement?.nom + ')'}"
+                      th:data-departement="${agent.departement?.id}"></option>
+            </select>
+            <div class="form-text">Agent responsable de la résolution</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-          // Réinitialiser la sélection de l'agent si le département change
-          if (selectedDepartementId === "") {
-            agentSelect.innerHTML =
-              '<option value="">Sélectionnez d\'abord un département</option>';
-            agentSelect.disabled = true;
-          } else {
-            agentSelect.innerHTML =
-              '<option value="">Sélectionnez un agent</option>';
-            agentSelect.disabled = false;
+    <!-- Resolution Card -->
+    <div class="form-card" sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')">
+      <div class="card-header">
+        <h5><i class="fas fa-check-circle"></i> Résolution</h5>
+        <small class="text-muted">Informations de résolution de l'incident</small>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label">
+            <i class="fas fa-comment-medical"></i>Commentaire de résolution
+          </label>
+          <textarea class="form-control"
+                    th:field="*{commentaireResolution}"
+                    rows="3"
+                    placeholder="Décrivez les actions entreprises pour résoudre l'incident..."></textarea>
+          <div class="form-text">Commentaire visible par le citoyen lorsque l'incident est résolu</div>
+        </div>
+      </div>
+    </div>
 
-            // Filtrer les agents par département
-            allAgentOptions.forEach((option) => {
-              const agentDepartementId =
-                option.getAttribute("data-departement");
-              if (
-                option.value !== "" &&
-                agentDepartementId === selectedDepartementId
-              ) {
-                const newOption = option.cloneNode(true);
-                agentSelect.appendChild(newOption);
-              }
-            });
+    <!-- Location Card -->
+    <div class="form-card" sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')">
+      <div class="card-header">
+        <h5><i class="fas fa-map"></i> Localisation</h5>
+        <small class="text-muted">Adresse et coordonnées GPS de l'incident</small>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8 mb-3">
+            <label class="form-label">
+              <i class="fas fa-map-pin"></i>Adresse
+            </label>
+            <input type="text"
+                   class="form-control"
+                   th:field="*{adresse}"
+                   th:value="${incident.adresse}"
+                   placeholder="Adresse complète de l'incident">
+          </div>
+          <div class="col-md-2 mb-3">
+            <label class="form-label">
+              <i class="fas fa-globe"></i>Latitude
+            </label>
+            <input type="number"
+                   step="any"
+                   class="form-control"
+                   id="latitude"
+                   th:field="*{latitude}"
+                   th:value="${incident.latitude}"
+                   placeholder="36.xxxx">
+          </div>
+          <div class="col-md-2 mb-3">
+            <label class="form-label">
+              <i class="fas fa-globe"></i>Longitude
+            </label>
+            <input type="number"
+                   step="any"
+                   class="form-control"
+                   id="longitude"
+                   th:field="*{longitude}"
+                   th:value="${incident.longitude}"
+                   placeholder="10.xxxx">
+          </div>
+        </div>
 
-            // Restaurer la sélection si l'agent est toujours disponible
-            if (
-              currentAgentValue &&
-              agentSelect.querySelector(`option[value="${currentAgentValue}"]`)
-            ) {
-              agentSelect.value = currentAgentValue;
-            }
+        <!-- Map Container -->
+        <div class="map-container">
+          <div id="map"
+               th:attr="data-latitude=${incident.latitude != null ? incident.latitude : 36.8065},
+                        data-longitude=${incident.longitude != null ? incident.longitude : 10.1815}">
+          </div>
+          <div class="map-instructions">
+            <i class="fas fa-info-circle"></i>
+            Cliquez sur la carte pour définir les coordonnées GPS de l'incident
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Existing Photos Card -->
+    <div class="form-card" sec:authorize="hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')" th:if="${incident.photos != null && !incident.photos.isEmpty()}">
+      <div class="card-header">
+        <h5><i class="fas fa-images"></i> Photos existantes</h5>
+        <small class="text-muted">Photos déjà associées à l'incident</small>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div th:each="photo : ${incident.photos}" class="col-md-3 mb-3">
+            <div class="photo-card">
+              <img th:src="${photo.chemin}"
+                   alt="Photo de l'incident"
+                   class="img-fluid rounded">
+              <div class="photo-info">
+                <small class="text-muted">
+                  <i class="fas fa-file-image"></i>
+                  <span th:text="${photo.nomFichier}"></span>
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Photos Card -->
+    <div class="form-card">
+      <div class="card-header">
+        <h5><i class="fas fa-camera"></i> Photos supplémentaires</h5>
+        <small class="text-muted">Ajoutez de nouvelles photos à l'incident</small>
+      </div>
+      <div class="card-body">
+        <div class="file-input-container">
+          <input type="file"
+                 class="form-control"
+                 name="photos"
+                 multiple
+                 accept="image/*"
+                 id="photoInput">
+          <label for="photoInput" class="file-input-label">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Glissez-déposez vos photos ou cliquez pour sélectionner</span>
+          </label>
+        </div>
+        <div class="form-text mt-2">
+          <i class="fas fa-info-circle"></i>
+          Formats acceptés: JPG, PNG, GIF. Taille maximale: 5MB par image.
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      <a th:href="@{/incidents/{id}(id=${incident.id})}" class="btn-cancel">
+        <i class="fas fa-times"></i>
+        Annuler
+      </a>
+      <button type="submit" class="btn-submit">
+        <i class="fas fa-save"></i>
+        Enregistrer les modifications
+      </button>
+    </div>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const departementSelect = document.getElementById("departementSelect");
+    const agentSelect = document.getElementById("agentSelect");
+
+    // Stocker toutes les options d'agents au chargement
+    const allAgentOptions = Array.from(agentSelect.querySelectorAll("option"));
+
+    function filterAgents() {
+      const selectedDepartementId = departementSelect.value;
+      const currentAgentValue = agentSelect.value; // Sauvegarder la valeur actuelle
+
+      // Réinitialiser la sélection de l'agent si le département change
+      if (selectedDepartementId === "") {
+        agentSelect.innerHTML = '<option value="">Sélectionnez d\'abord un département</option>';
+        agentSelect.disabled = true;
+      } else {
+        agentSelect.innerHTML = '<option value="">Sélectionnez un agent</option>';
+        agentSelect.disabled = false;
+
+        // Filtrer les agents par département
+        allAgentOptions.forEach((option) => {
+          const agentDepartementId = option.getAttribute("data-departement");
+          if (option.value !== "" && agentDepartementId === selectedDepartementId) {
+            const newOption = option.cloneNode(true);
+            agentSelect.appendChild(newOption);
           }
+        });
+
+        // Restaurer la sélection si l'agent est toujours disponible
+        if (currentAgentValue && agentSelect.querySelector(`option[value="${currentAgentValue}"]`)) {
+          agentSelect.value = currentAgentValue;
         }
+      }
+    }
 
-        // Écouter les changements sur le select département
-        departementSelect.addEventListener("change", filterAgents);
+    // Écouter les changements sur le select département
+    departementSelect.addEventListener("change", filterAgents);
 
-        // Initialiser le filtrage au chargement de la page
-        filterAgents();
-      });
-    </script>
-  </body>
+    // Initialiser le filtrage au chargement de la page
+    filterAgents();
+
+    // Activer/désactiver l'agent select en fonction du département sélectionné
+    departementSelect.addEventListener("change", function() {
+      if (this.value) {
+        agentSelect.disabled = false;
+      } else {
+        agentSelect.disabled = true;
+      }
+    });
+
+    // File input preview
+    const fileInput = document.getElementById('photoInput');
+    const fileLabel = document.querySelector('.file-input-label span');
+
+    fileInput.addEventListener('change', function(e) {
+      const files = e.target.files;
+      if (files.length > 0) {
+        if (files.length === 1) {
+          fileLabel.textContent = '1 fichier sélectionné';
+        } else {
+          fileLabel.textContent = `${files.length} fichiers sélectionnés`;
+        }
+      } else {
+        fileLabel.textContent = 'Glissez-déposez vos photos ou cliquez pour sélectionner';
+      }
+    });
+
+    // Drag and drop functionality
+    const fileContainer = document.querySelector('.file-input-container');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      fileContainer.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      fileContainer.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      fileContainer.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+      fileContainer.classList.add('highlight');
+    }
+
+    function unhighlight(e) {
+      fileContainer.classList.remove('highlight');
+    }
+
+    fileContainer.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      fileInput.files = files;
+
+      // Trigger change event
+      const event = new Event('change');
+      fileInput.dispatchEvent(event);
+    }
+  });
+
+  // Map Initialization
+  document.addEventListener('DOMContentLoaded', function() {
+    const mapElement = document.getElementById('map');
+    if (mapElement) {
+      initMap();
+    }
+  });
+
+  function initMap() {
+    const mapElement = document.getElementById('map');
+    const latitude = parseFloat(mapElement.getAttribute('data-latitude')) || 36.8065;
+    const longitude = parseFloat(mapElement.getAttribute('data-longitude')) || 10.1815;
+
+    // Initialize map
+    const map = L.map('map').setView([latitude, longitude], 13);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Add marker if coordinates exist
+    let marker;
+    if (latitude && longitude && latitude !== 36.8065 && longitude !== 10.1815) {
+      marker = L.marker([latitude, longitude]).addTo(map);
+    }
+
+    // Handle map clicks to set coordinates
+    map.on('click', function(e) {
+      const { lat, lng } = e.latlng;
+
+      // Update form fields
+      document.getElementById('latitude').value = lat.toFixed(6);
+      document.getElementById('longitude').value = lng.toFixed(6);
+
+      // Update or create marker
+      if (marker) {
+        marker.setLatLng([lat, lng]);
+      } else {
+        marker = L.marker([lat, lng]).addTo(map);
+      }
+    });
+  }
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</body>
 </html>

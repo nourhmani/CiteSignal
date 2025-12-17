@@ -256,15 +256,12 @@ public class IncidentService {
     }
     
     private boolean isValidStatusTransition(StatutIncident oldStatut, StatutIncident newStatut) {
-        // Définir les transitions valides
+        // Définir les transitions valides - progression linéaire uniquement
         return switch (oldStatut) {
             case SIGNALE -> newStatut == StatutIncident.PRIS_EN_CHARGE;
-            case PRIS_EN_CHARGE -> newStatut == StatutIncident.EN_RESOLUTION || 
-                                   newStatut == StatutIncident.SIGNALE;
-            case EN_RESOLUTION -> newStatut == StatutIncident.RESOLU || 
-                                  newStatut == StatutIncident.PRIS_EN_CHARGE;
-            case RESOLU -> newStatut == StatutIncident.CLOTURE || 
-                           newStatut == StatutIncident.EN_RESOLUTION;
+            case PRIS_EN_CHARGE -> newStatut == StatutIncident.EN_RESOLUTION;
+            case EN_RESOLUTION -> newStatut == StatutIncident.RESOLU;
+            case RESOLU -> newStatut == StatutIncident.CLOTURE;
             case CLOTURE -> false; // Une fois clôturé, on ne peut plus changer
         };
     }
