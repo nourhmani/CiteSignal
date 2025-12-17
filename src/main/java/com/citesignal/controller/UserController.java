@@ -2,15 +2,13 @@ package com.citesignal.controller;
 
 import com.citesignal.dto.CreateAgentRequest;
 import com.citesignal.dto.CreateAdminRequest;
-import com.citesignal.model.User;
+import com.citesignal.model.*;
 import com.citesignal.security.UserPrincipal;
 import com.citesignal.service.CsvImportService;
 import com.citesignal.service.UserService;
 import com.citesignal.service.StatisticsService;
 import com.citesignal.service.IncidentService;
 import com.citesignal.service.RapportService;
-import com.citesignal.model.Incident;
-import com.citesignal.model.Rapport;
 import com.citesignal.repository.DepartementRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -83,15 +81,15 @@ public class UserController {
             // Calculer les statistiques
             long total = allIncidents.size();
             long enAttente = allIncidents.stream()
-                    .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.SIGNALE)
+                    .filter(i -> i.getStatut() == StatutIncident.SIGNALE)
                     .count();
             long enCours = allIncidents.stream()
-                    .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.PRIS_EN_CHARGE ||
-                                i.getStatut() == com.citesignal.model.Incident.Statut.EN_RESOLUTION)
+                    .filter(i -> i.getStatut() == StatutIncident.PRIS_EN_CHARGE ||
+                                i.getStatut() == StatutIncident.EN_RESOLUTION)
                     .count();
             long resolus = allIncidents.stream()
-                    .filter(i -> i.getStatut() == com.citesignal.model.Incident.Statut.RESOLU ||
-                                i.getStatut() == com.citesignal.model.Incident.Statut.CLOTURE)
+                    .filter(i -> i.getStatut() == StatutIncident.RESOLU ||
+                                i.getStatut() == StatutIncident.CLOTURE)
                     .count();
             
             // Charger les incidents paginés pour l'affichage
@@ -101,7 +99,7 @@ public class UserController {
             model.addAttribute("incidents", incidentsPage);
             model.addAttribute("currentPage", page);
             model.addAttribute("totalPages", incidentsPage.getTotalPages());
-            model.addAttribute("statuts", Incident.Statut.values());
+            model.addAttribute("statuts", StatutIncident.values());
             model.addAttribute("totalIncidents", total);
             model.addAttribute("enAttente", enAttente);
             model.addAttribute("enCours", enCours);
@@ -313,7 +311,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMINISTRATEUR') or hasRole('SUPERADMIN')")
     @PostMapping("/admin/statistics/generate-report")
     public String generateReport(
-            @RequestParam("format") Rapport.FormatExport format,
+            @RequestParam("format") FormatExport format,
             @RequestParam(value = "dateDebut", required = false) String dateDebutStr,
             @RequestParam(value = "dateFin", required = false) String dateFinStr,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -383,7 +381,7 @@ public class UserController {
     @GetMapping("/admin/agents")
     public String listAgents(Model model) {
         try {
-            List<User> agents = userService.getUsersByRole(User.RoleName.AGENT_MUNICIPAL);
+            List<User> agents = userService.getUsersByRole(RoleName.AGENT_MUNICIPAL);
             model.addAttribute("agents", agents);
             model.addAttribute("title", "Liste des Agents Municipaux");
         } catch (Exception e) {
@@ -398,7 +396,7 @@ public class UserController {
     @GetMapping("/admin/citoyens")
     public String listCitoyens(Model model) {
         try {
-            List<User> citoyens = userService.getUsersByRole(User.RoleName.CITOYEN);
+            List<User> citoyens = userService.getUsersByRole(RoleName.CITOYEN);
             model.addAttribute("citoyens", citoyens);
             model.addAttribute("title", "Liste des Citoyens");
         } catch (Exception e) {
@@ -413,7 +411,7 @@ public class UserController {
     @GetMapping("/superadmin/admins")
     public String listAdmins(Model model) {
         try {
-            List<User> admins = userService.getUsersByRole(User.RoleName.ADMINISTRATEUR);
+            List<User> admins = userService.getUsersByRole(RoleName.ADMINISTRATEUR);
             model.addAttribute("admins", admins);
             model.addAttribute("title", "Liste des Administrateurs");
         } catch (Exception e) {
@@ -433,10 +431,10 @@ public class UserController {
             model.addAttribute("title", "Liste de tous les Utilisateurs");
 
             // Statistiques pour les cartes
-            long citizenCount = allUsers.stream().filter(u -> u.getRole() == User.RoleName.CITOYEN).count();
-            long agentCount = allUsers.stream().filter(u -> u.getRole() == User.RoleName.AGENT_MUNICIPAL).count();
-            long adminCount = allUsers.stream().filter(u -> u.getRole() == User.RoleName.ADMINISTRATEUR).count();
-            long superadminCount = allUsers.stream().filter(u -> u.getRole() == User.RoleName.SUPERADMIN).count();
+            long citizenCount = allUsers.stream().filter(u -> u.getRole() == RoleName.CITOYEN).count();
+            long agentCount = allUsers.stream().filter(u -> u.getRole() == RoleName.AGENT_MUNICIPAL).count();
+            long adminCount = allUsers.stream().filter(u -> u.getRole() == RoleName.ADMINISTRATEUR).count();
+            long superadminCount = allUsers.stream().filter(u -> u.getRole() == RoleName.SUPERADMIN).count();
 
             model.addAttribute("citizenCount", citizenCount);
             model.addAttribute("agentCount", agentCount);
@@ -459,7 +457,7 @@ public class UserController {
     public String showEditAgentForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
             User agent = userService.getUserById(id);
-            if (agent.getRole() != User.RoleName.AGENT_MUNICIPAL) {
+            if (agent.getRole() != RoleName.AGENT_MUNICIPAL) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Cet utilisateur n'est pas un agent municipal.");
                 return "redirect:/user/admin/agents";
             }
@@ -497,7 +495,7 @@ public class UserController {
 
         try {
             User agent = userService.getUserById(id);
-            if (agent.getRole() != User.RoleName.AGENT_MUNICIPAL) {
+            if (agent.getRole() != RoleName.AGENT_MUNICIPAL) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Cet utilisateur n'est pas un agent municipal.");
                 return "redirect:/user/admin/agents";
             }
@@ -532,7 +530,7 @@ public class UserController {
     public String deleteAgent(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             User agent = userService.getUserById(id);
-            if (agent.getRole() != User.RoleName.AGENT_MUNICIPAL) {
+            if (agent.getRole() != RoleName.AGENT_MUNICIPAL) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Cet utilisateur n'est pas un agent municipal.");
                 return "redirect:/user/admin/agents";
             }
@@ -551,7 +549,7 @@ public class UserController {
     public String showEditCitoyenForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
             User citoyen = userService.getUserById(id);
-            if (citoyen.getRole() != User.RoleName.CITOYEN) {
+            if (citoyen.getRole() != RoleName.CITOYEN) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Cet utilisateur n'est pas un citoyen.");
                 return "redirect:/user/admin/citoyens";
             }
@@ -577,7 +575,7 @@ public class UserController {
                              RedirectAttributes redirectAttributes) {
         try {
             User citoyen = userService.getUserById(id);
-            if (citoyen.getRole() != User.RoleName.CITOYEN) {
+            if (citoyen.getRole() != RoleName.CITOYEN) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Cet utilisateur n'est pas un citoyen.");
                 return "redirect:/user/admin/citoyens";
             }
@@ -605,7 +603,7 @@ public class UserController {
     public String deleteCitoyen(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             User citoyen = userService.getUserById(id);
-            if (citoyen.getRole() != User.RoleName.CITOYEN) {
+            if (citoyen.getRole() != RoleName.CITOYEN) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Cet utilisateur n'est pas un citoyen.");
                 return "redirect:/user/admin/citoyens";
             }
@@ -624,7 +622,7 @@ public class UserController {
     public String showEditAdminForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
             User admin = userService.getUserById(id);
-            if (admin.getRole() != User.RoleName.ADMINISTRATEUR) {
+            if (admin.getRole() != RoleName.ADMINISTRATEUR) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Cet utilisateur n'est pas un administrateur.");
                 return "redirect:/user/superadmin/admins";
             }
@@ -658,7 +656,7 @@ public class UserController {
 
         try {
             User admin = userService.getUserById(id);
-            if (admin.getRole() != User.RoleName.ADMINISTRATEUR) {
+            if (admin.getRole() != RoleName.ADMINISTRATEUR) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Cet utilisateur n'est pas un administrateur.");
                 return "redirect:/user/superadmin/admins";
             }
@@ -685,7 +683,7 @@ public class UserController {
     public String deleteAdmin(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             User admin = userService.getUserById(id);
-            if (admin.getRole() != User.RoleName.ADMINISTRATEUR) {
+            if (admin.getRole() != RoleName.ADMINISTRATEUR) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Cet utilisateur n'est pas un administrateur.");
                 return "redirect:/user/superadmin/admins";
             }
@@ -705,7 +703,7 @@ public class UserController {
         try {
             User user = userService.getUserById(id);
             model.addAttribute("user", user);
-            model.addAttribute("roles", User.RoleName.values());
+            model.addAttribute("roles", RoleName.values());
             model.addAttribute("departements", departementRepository.findAll());
             model.addAttribute("title", "Modifier l'Utilisateur");
         } catch (Exception e) {
@@ -721,7 +719,7 @@ public class UserController {
                           @RequestParam String nom,
                           @RequestParam String prenom,
                           @RequestParam String email,
-                          @RequestParam User.RoleName role,
+                          @RequestParam RoleName role,
                           @RequestParam(required = false) String telephone,
                           @RequestParam(required = false) String adresse,
                           @RequestParam(defaultValue = "true") boolean active,
@@ -740,7 +738,7 @@ public class UserController {
             user.setActive(active);
 
             // Mettre à jour le département si fourni et si l'utilisateur est un agent
-            if (departementId != null && role == User.RoleName.AGENT_MUNICIPAL) {
+            if (departementId != null && role == RoleName.AGENT_MUNICIPAL) {
                 departementRepository.findById(departementId).ifPresent(user::setDepartement);
             } else {
                 user.setDepartement(null);

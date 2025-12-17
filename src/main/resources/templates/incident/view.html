@@ -582,23 +582,29 @@
                             </div>
                             <div class="step-label">Signalé</div>
                         </div>
-                        <div class="status-step" th:classappend="${incident.statut.toString() == 'PRIS_EN_CHARGE' || incident.statut.toString() == 'EN_RESOLUTION' || incident.statut.toString() == 'RESOLU'} ? 'completed' : ''">
+                        <div class="status-step" th:classappend="${incident.statut.toString() == 'PRIS_EN_CHARGE' || incident.statut.toString() == 'EN_RESOLUTION' || incident.statut.toString() == 'RESOLU'|| incident.statut.toString() == 'CLOTURE'} ? 'completed' : ''">
                             <div class="step-icon">
                                 <i class="fas fa-user-check"></i>
                             </div>
                             <div class="step-label">Pris en charge</div>
                         </div>
-                        <div class="status-step" th:classappend="${incident.statut.toString() == 'EN_RESOLUTION' || incident.statut.toString() == 'RESOLU'} ? 'completed' : ''">
+                        <div class="status-step" th:classappend="${incident.statut.toString() == 'EN_RESOLUTION' || incident.statut.toString() == 'RESOLU'|| incident.statut.toString() == 'CLOTURE'} ? 'completed' : ''">
                             <div class="step-icon">
                                 <i class="fas fa-tools"></i>
                             </div>
                             <div class="step-label">En résolution</div>
                         </div>
-                        <div class="status-step" th:classappend="${incident.statut.toString() == 'RESOLU'} ? 'completed' : ''">
+                        <div class="status-step" th:classappend="${incident.statut.toString() == 'RESOLU'|| incident.statut.toString() == 'CLOTURE'} ? 'completed' : ''">
                             <div class="step-icon">
                                 <i class="fas fa-check"></i>
                             </div>
                             <div class="step-label">Résolu</div>
+                        </div>
+                        <div class="status-step" th:classappend="${incident.statut.toString() == 'CLOTURE'} ? 'completed' : ''">
+                            <div class="step-icon">
+                                <i class="fas fa-flag-checkered"></i>
+                            </div>
+                            <div class="step-label">Clôturé</div>
                         </div>
                     </div>
                 </div>

@@ -90,12 +90,5 @@ public class User {
     public boolean hasRole(RoleName roleName) {
         return role != null && role == roleName;
     }
-    
-    public enum RoleName {
-        CITOYEN,
-        AGENT_MUNICIPAL,
-        ADMINISTRATEUR,
-        SUPERADMIN
-    }
 }
 

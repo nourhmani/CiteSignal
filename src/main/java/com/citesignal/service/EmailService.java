@@ -109,6 +109,29 @@ public class EmailService {
         }
     }
     
+    public void sendAgentAssignmentEmail(String to, String incidentTitle, String address, String description) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject("Nouvelle assignation d'incident - " + incidentTitle);
+            message.setText("Bonjour,\n\n" +
+                    "Un nouvel incident vous a été assigné.\n\n" +
+                    "Titre : " + incidentTitle + "\n" +
+                    "Adresse : " + address + "\n" +
+                    "Description : " + description + "\n\n" +
+                    "Veuillez prendre en charge cet incident dans les plus brefs délais.\n\n" +
+                    "Vous pouvez consulter l'incident sur votre tableau de bord.\n\n" +
+                    "Cordialement,\n" +
+                    "L'équipe CiteSignal");
+            
+            mailSender.send(message);
+            logger.info("Agent assignment email sent to: {}", to);
+        } catch (Exception e) {
+            logger.error("Error sending agent assignment email to: {}", to, e);
+        }
+    }
+    
     public void sendAdminCredentials(String to, String email, String password) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();

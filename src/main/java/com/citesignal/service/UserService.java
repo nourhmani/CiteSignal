@@ -1,5 +1,6 @@
 package com.citesignal.service;
 
+import com.citesignal.model.RoleName;
 import com.citesignal.model.User;
 import com.citesignal.repository.UserRepository;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         
         // Assigner le rôle CITOYEN par défaut
-        user.setRole(User.RoleName.CITOYEN);
+        user.setRole(RoleName.CITOYEN);
         
         // Générer un token de vérification
         String verificationToken = generateToken();
@@ -65,7 +66,7 @@ public class UserService {
     }
     
     @Transactional
-    public User createAgentOrAdmin(User user, User.RoleName roleName) {
+    public User createAgentOrAdmin(User user, RoleName roleName) {
         // Vérifier si l'email existe déjà
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("Un compte avec cet email existe déjà");
@@ -97,7 +98,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(generatedPassword));
         
         // Assigner le rôle AGENT_MUNICIPAL
-        user.setRole(User.RoleName.AGENT_MUNICIPAL);
+        user.setRole(RoleName.AGENT_MUNICIPAL);
         
         // Les agents n'ont pas besoin de vérification d'email
         user.setEmailVerified(true);
@@ -127,7 +128,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(generatedPassword));
         
         // Assigner le rôle ADMINISTRATEUR
-        user.setRole(User.RoleName.ADMINISTRATEUR);
+        user.setRole(RoleName.ADMINISTRATEUR);
         
         // Les admins n'ont pas besoin de vérification d'email
         user.setEmailVerified(true);
@@ -157,7 +158,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(generatedPassword));
         
         // Assigner le rôle SUPERADMIN
-        user.setRole(User.RoleName.SUPERADMIN);
+        user.setRole(RoleName.SUPERADMIN);
         
         // Les super admins n'ont pas besoin de vérification d'email
         user.setEmailVerified(true);
@@ -228,7 +229,7 @@ public class UserService {
         return userRepository.findAll();
     }
     
-    public List<User> getUsersByRole(User.RoleName role) {
+    public List<User> getUsersByRole(RoleName role) {
         return userRepository.findAll().stream()
                 .filter(user -> user.getRole() == role)
                 .collect(java.util.stream.Collectors.toList());

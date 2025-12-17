@@ -3,8 +3,7 @@ package com.citesignal.controller;
 import com.citesignal.dto.CreateIncidentRequest;
 import com.citesignal.dto.IncidentSearchRequest;
 import com.citesignal.dto.UpdateIncidentRequest;
-import com.citesignal.model.Incident;
-import com.citesignal.model.User;
+import com.citesignal.model.*;
 import com.citesignal.repository.QuartierRepository;
 import com.citesignal.repository.DepartementRepository;
 import com.citesignal.repository.UserRepository;
@@ -59,8 +58,8 @@ public class IncidentController {
     public String showCreateForm(Model model, Authentication authentication) {
         try {
             model.addAttribute("incident", new CreateIncidentRequest());
-            model.addAttribute("categories", Incident.Categorie.values());
-            model.addAttribute("priorites", Incident.Priorite.values());
+            model.addAttribute("categories", CategorieIncident.values());
+            model.addAttribute("priorites", PrioriteIncident.values());
             model.addAttribute("quartiers", quartierRepository.findAll());
         } catch (Exception e) {
             model.addAttribute("quartiers", java.util.Collections.emptyList());
@@ -77,8 +76,8 @@ public class IncidentController {
                                 RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             try {
-                model.addAttribute("categories", Incident.Categorie.values());
-                model.addAttribute("priorites", Incident.Priorite.values());
+                model.addAttribute("categories", CategorieIncident.values());
+                model.addAttribute("priorites", PrioriteIncident.values());
                 model.addAttribute("quartiers", quartierRepository.findAll());
             } catch (Exception e) {
                 model.addAttribute("quartiers", java.util.Collections.emptyList());
@@ -122,12 +121,12 @@ public class IncidentController {
                     if (userPrincipal != null) {
                         User user = userRepository.findById(userPrincipal.getId()).orElse(null);
                         if (user != null) {
-                            canEdit = user.hasRole(User.RoleName.ADMINISTRATEUR) || 
-                                     user.hasRole(User.RoleName.SUPERADMIN) ||
-                                     (user.hasRole(User.RoleName.AGENT_MUNICIPAL) && 
+                            canEdit = ((User) user).hasRole(RoleName.ADMINISTRATEUR) ||
+                                     user.hasRole(RoleName.SUPERADMIN) ||
+                                     (user.hasRole(RoleName.AGENT_MUNICIPAL) && 
                                       incident.getAgent() != null && 
                                       incident.getAgent().getId().equals(user.getId())) ||
-                                     (user.hasRole(User.RoleName.CITOYEN) && 
+                                     (user.hasRole(RoleName.CITOYEN) && 
                                       incident.getCitoyen() != null &&
                                       incident.getCitoyen().getId().equals(user.getId()));
                         }
@@ -139,8 +138,8 @@ public class IncidentController {
             
             model.addAttribute("incident", incident);
             model.addAttribute("canEdit", canEdit);
-            model.addAttribute("statuts", Incident.Statut.values());
-            model.addAttribute("priorites", Incident.Priorite.values());
+            model.addAttribute("statuts", StatutIncident.values());
+            model.addAttribute("priorites", PrioriteIncident.values());
         } catch (RuntimeException e) {
             if (e.getMessage() != null && e.getMessage().contains("introuvable")) {
                 model.addAttribute("errorMessage", "Incident introuvable");
@@ -161,8 +160,8 @@ public class IncidentController {
     
     @GetMapping
     public String listIncidents(
-            @RequestParam(required = false) Incident.Statut statut,
-            @RequestParam(required = false) Incident.Categorie categorie,
+            @RequestParam(required = false) StatutIncident statut,
+            @RequestParam(required = false) CategorieIncident categorie,
             @RequestParam(required = false) Long quartierId,
             @RequestParam(required = false) Long departementId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateDebut,
@@ -184,9 +183,9 @@ public class IncidentController {
         Page<Incident> incidents;
         
         // Filtrer selon le rôle
-        if (user != null && user.hasRole(User.RoleName.CITOYEN)) {
+        if (user != null && user.hasRole(RoleName.CITOYEN)) {
             incidents = incidentService.getIncidentsByCitoyen(user.getId(), pageable);
-        } else if (user != null && user.hasRole(User.RoleName.AGENT_MUNICIPAL)) {
+        } else if (user != null && user.hasRole(RoleName.AGENT_MUNICIPAL)) {
             incidents = incidentService.getIncidentsByAgent(user.getId(), pageable);
         } else {
             // Recherche avancée pour admins
@@ -202,8 +201,8 @@ public class IncidentController {
         }
         
         model.addAttribute("incidents", incidents);
-        model.addAttribute("statuts", Incident.Statut.values());
-        model.addAttribute("categories", Incident.Categorie.values());
+        model.addAttribute("statuts", StatutIncident.values());
+        model.addAttribute("categories", CategorieIncident.values());
         try {
             model.addAttribute("quartiers", quartierRepository.findAll());
             model.addAttribute("departements", departementRepository.findAll());
@@ -228,13 +227,46 @@ public class IncidentController {
         try {
             Incident incident = incidentService.getIncidentById(id);
             model.addAttribute("incident", incident);
-            model.addAttribute("updateRequest", new UpdateIncidentRequest());
-            model.addAttribute("categories", Incident.Categorie.values());
-            model.addAttribute("statuts", Incident.Statut.values());
-            model.addAttribute("priorites", Incident.Priorite.values());
+            
+            // Pré-remplir le formulaire avec les valeurs actuelles
+            UpdateIncidentRequest updateRequest = new UpdateIncidentRequest();
+            updateRequest.setTitre(incident.getTitre());
+            updateRequest.setDescription(incident.getDescription());
+            updateRequest.setCategorie(incident.getCategorie());
+            updateRequest.setStatut(incident.getStatut());
+            updateRequest.setPriorite(incident.getPriorite());
+            updateRequest.setAdresse(incident.getAdresse());
+            updateRequest.setLatitude(incident.getLatitude());
+            updateRequest.setLongitude(incident.getLongitude());
+            if (incident.getQuartier() != null) {
+                updateRequest.setQuartierId(incident.getQuartier().getId());
+            }
+            if (incident.getDepartement() != null) {
+                updateRequest.setDepartementId(incident.getDepartement().getId());
+            }
+            if (incident.getAgent() != null) {
+                updateRequest.setAgentId(incident.getAgent().getId());
+            }
+            updateRequest.setCommentaireResolution(incident.getCommentaireResolution());
+            
+            model.addAttribute("updateRequest", updateRequest);
+            model.addAttribute("categories", CategorieIncident.values());
+            model.addAttribute("statuts", StatutIncident.values());
+            model.addAttribute("priorites", PrioriteIncident.values());
             model.addAttribute("quartiers", quartierRepository.findAll());
             model.addAttribute("departements", departementRepository.findAll());
-            model.addAttribute("agents", userRepository.findByRole(User.RoleName.AGENT_MUNICIPAL));
+            
+            // Récupérer tous les agents pour le filtrage côté client
+            model.addAttribute("allAgents", userRepository.findByRole(RoleName.AGENT_MUNICIPAL));
+            
+            // Récupérer les agents disponibles (pour compatibilité)
+            List<User> availableAgents;
+            if (incident.getDepartement() != null) {
+                availableAgents = userRepository.findByRoleAndDepartement(RoleName.AGENT_MUNICIPAL, incident.getDepartement());
+            } else {
+                availableAgents = userRepository.findByRole(RoleName.AGENT_MUNICIPAL);
+            }
+            model.addAttribute("agents", availableAgents);
         } catch (Exception e) {
             model.addAttribute("quartiers", java.util.Collections.emptyList());
             model.addAttribute("departements", java.util.Collections.emptyList());
@@ -255,12 +287,23 @@ public class IncidentController {
             try {
                 Incident incident = incidentService.getIncidentById(id);
                 model.addAttribute("incident", incident);
-                model.addAttribute("categories", Incident.Categorie.values());
-                model.addAttribute("statuts", Incident.Statut.values());
-                model.addAttribute("priorites", Incident.Priorite.values());
+                model.addAttribute("categories", CategorieIncident.values());
+                model.addAttribute("statuts", StatutIncident.values());
+                model.addAttribute("priorites", PrioriteIncident.values());
                 model.addAttribute("quartiers", quartierRepository.findAll());
                 model.addAttribute("departements", departementRepository.findAll());
-                model.addAttribute("agents", userRepository.findByRole(User.RoleName.AGENT_MUNICIPAL));
+                
+                // Passer tous les agents pour le filtrage côté client
+                model.addAttribute("allAgents", userRepository.findByRole(RoleName.AGENT_MUNICIPAL));
+                
+                // Récupérer les agents disponibles selon le département de l'incident
+                List<User> availableAgents;
+                if (incident.getDepartement() != null) {
+                    availableAgents = userRepository.findByRoleAndDepartement(RoleName.AGENT_MUNICIPAL, incident.getDepartement());
+                } else {
+                    availableAgents = userRepository.findByRole(RoleName.AGENT_MUNICIPAL);
+                }
+                model.addAttribute("agents", availableAgents);
             } catch (Exception e) {
                 model.addAttribute("quartiers", java.util.Collections.emptyList());
                 model.addAttribute("departements", java.util.Collections.emptyList());

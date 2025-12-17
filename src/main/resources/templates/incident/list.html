@@ -316,7 +316,7 @@
         .badge.status-pris-en-charge { background: #dbeafe; color: #1d4ed8; }
         .badge.status-en-resolution { background: #fef3c7; color: #92400e; }
         .badge.status-resolu { background: #d1fae5; color: #065f46; }
-
+        .badge.status-cloture { background: #e0e7ff; color: #065f46; }
         /* Priority Badges */
         .badge.priority-urgente { background: #fee2e2; color: #991b1b; }
         .badge.priority-haute { background: #fef3c7; color: #92400e; }
@@ -1028,7 +1028,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const filters = ['statusFilter', 'categoryFilter', 'priorityFilter', 'quarterFilter'];
 
-        // Uncomment this block to use server-side filtering instead of client-side
+        //  server-side filtering instead of client-side
         /*
         filters.forEach(filterId => {
             document.getElementById(filterId).addEventListener('change', function() {

@@ -1,8 +1,6 @@
 package com.citesignal.service;
 
-import com.citesignal.model.Rapport;
-import com.citesignal.model.User;
-import com.citesignal.model.Incident;
+import com.citesignal.model.*;
 import com.citesignal.repository.RapportRepository;
 import com.citesignal.repository.IncidentRepository;
 import com.itextpdf.text.*;
@@ -34,7 +32,7 @@ public class RapportService {
     private StatisticsService statisticsService;
 
     @Transactional
-    public Rapport genererRapportStatistiques(User user, LocalDate dateDebut, LocalDate dateFin, Rapport.FormatExport format) {
+    public Rapport genererRapportStatistiques(User user, LocalDate dateDebut, LocalDate dateFin, FormatExport format) {
         try {
             // Récupérer les statistiques
             Map<String, Object> stats = statisticsService.getGeneralStatistics();
@@ -128,7 +126,7 @@ public class RapportService {
                     dateDebut.format(DateTimeFormatter.ofPattern("ddMMyyyy")),
                     dateFin.format(DateTimeFormatter.ofPattern("ddMMyyyy"))));
             rapport.setContenu(contenu.toString());
-            rapport.setType(Rapport.TypeRapport.STATISTIQUES_GENERALES);
+            rapport.setType(TypeRapport.STATISTIQUES_GENERALES);
             rapport.setDateDebut(dateDebut);
             rapport.setDateFin(dateFin);
             rapport.setCreatedBy(user);
@@ -161,7 +159,7 @@ public class RapportService {
     }
 
     private String genererFichierRapport(Rapport rapport, String fileName,
-                                         Rapport.FormatExport format, List<Incident> incidents) {
+                                         FormatExport format, List<Incident> incidents) {
         try {
             // Créer le dossier uploads/rapports s'il n'existe pas
             Path rapportsDir = Paths.get("uploads", "rapports");

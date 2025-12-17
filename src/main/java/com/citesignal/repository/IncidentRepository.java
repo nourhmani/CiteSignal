@@ -2,6 +2,8 @@ package com.citesignal.repository;
 
 import com.citesignal.model.Incident;
 import com.citesignal.model.User;
+import com.citesignal.model.CategorieIncident;
+import com.citesignal.model.StatutIncident;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -31,9 +33,9 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
     
     List<Incident> findByAgent(User agent);
     
-    Page<Incident> findByStatut(Incident.Statut statut, Pageable pageable);
+    Page<Incident> findByStatut(StatutIncident statut, Pageable pageable);
     
-    Page<Incident> findByCategorie(Incident.Categorie categorie, Pageable pageable);
+    Page<Incident> findByCategorie(CategorieIncident categorie, Pageable pageable);
     
     Page<Incident> findByQuartierId(Long quartierId, Pageable pageable);
     
@@ -51,8 +53,8 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
            "LOWER(i.description) LIKE LOWER(CONCAT('%', :recherche, '%')) OR " +
            "LOWER(i.adresse) LIKE LOWER(CONCAT('%', :recherche, '%')))")
     Page<Incident> searchIncidents(
-            @Param("statut") Incident.Statut statut,
-            @Param("categorie") Incident.Categorie categorie,
+            @Param("statut") StatutIncident statut,
+            @Param("categorie") CategorieIncident categorie,
             @Param("quartierId") Long quartierId,
             @Param("departementId") Long departementId,
             @Param("dateDebut") LocalDateTime dateDebut,
@@ -62,10 +64,10 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
     );
     
     @Query("SELECT COUNT(i) FROM Incident i WHERE i.statut = :statut")
-    Long countByStatut(@Param("statut") Incident.Statut statut);
+    Long countByStatut(@Param("statut") StatutIncident statut);
     
     @Query("SELECT COUNT(i) FROM Incident i WHERE i.categorie = :categorie")
-    Long countByCategorie(@Param("categorie") Incident.Categorie categorie);
+    Long countByCategorie(@Param("categorie") CategorieIncident categorie);
     
     @Query("SELECT i FROM Incident i WHERE i.createdAt >= :dateDebut AND i.createdAt <= :dateFin")
     List<Incident> findByDateRange(@Param("dateDebut") LocalDateTime dateDebut, 
