@@ -523,6 +523,11 @@
               enctype="multipart/form-data"
               id="uploadForm"
             >
+              <input
+                type="hidden"
+                th:name="${_csrf.parameterName}"
+                th:value="${_csrf.token}"
+              />
               <div class="upload-section">
                 <div class="upload-icon">
                   <i class="fas fa-cloud-upload-alt"></i>
